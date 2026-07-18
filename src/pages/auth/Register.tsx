@@ -1,117 +1,234 @@
 import { useState, type FormEvent, type ReactElement } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 import supabase from "../../lib/supabaseClient";
 import api from "../../lib/api";
 
+import { AuthCard } from "../../components/auth/AuthCard";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+
 export const Register = (): ReactElement => {
-  const navigate = useNavigate();
-  const [fullName, setFullName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
+    const navigate = useNavigate();
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
 
-    if (signUpError) {
-      setIsLoading(false);
-      setError(signUpError.message);
-      return;
-    }
+    const [fullName, setFullName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
-    if (!data.session) {
-      setIsLoading(false);
-      setError("Check your email to confirm your account before logging in.");
-      return;
-    }
 
-    try {
-      await api.post("/profile", { full_name: fullName });
-    } catch {
-      setIsLoading(false);
-      setError("Account created, but we could not set up your profile. Try logging in.");
-      return;
-    }
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    setIsLoading(false);
-    navigate("/");
-  };
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm">
-        <h1 className="mb-6 text-2xl font-semibold text-gray-900">Create account</h1>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <label htmlFor="fullName" className="text-sm font-medium text-gray-700">
-              Full name
-            </label>
-            <input
-              id="fullName"
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-            />
-          </div>
+    const handleSubmit = async (
+        e: FormEvent<HTMLFormElement>
+    ) => {
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-            />
-          </div>
+        e.preventDefault();
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none"
-            />
-          </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+        setError(null);
+        setIsLoading(true);
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="mt-2 rounded-lg bg-gray-900 py-2 text-sm font-medium text-white transition hover:bg-gray-800 disabled:opacity-50"
-          >
-            {isLoading ? "Creating account..." : "Create account"}
-          </button>
-        </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Already have an account?{" "}
-          <a href="/login" className="font-medium text-gray-900 hover:underline">
-            Log in
-          </a>
-        </p>
-      </div>
-    </div>
-  );
+
+        const { data, error: signUpError } =
+            await supabase.auth.signUp({
+                email,
+                password,
+            });
+
+
+
+        if (signUpError) {
+
+            setIsLoading(false);
+            setError(signUpError.message);
+            return;
+
+        }
+
+
+
+        if (!data.session) {
+
+            setIsLoading(false);
+
+            setError(
+                "Check your email to confirm your account before logging in."
+            );
+
+            return;
+
+        }
+
+
+
+        try {
+
+            await api.post("/profile", {
+                full_name: fullName,
+            });
+
+
+        } catch {
+
+            setIsLoading(false);
+
+            setError(
+                "Account created, but we could not set up your profile."
+            );
+
+            return;
+
+        }
+
+
+
+        setIsLoading(false);
+
+        navigate("/");
+
+    };
+
+
+
+    return (
+
+        <AuthCard
+
+            title="Create account"
+
+            description="Join Huella and help animals in your community."
+
+            footer={
+
+                <p className="
+          text-center
+          text-sm
+          text-muted-foreground
+        ">
+
+                    Already have an account?{" "}
+
+
+                    <Link
+                        to="/login"
+                        className=" font-medium text-primary hover:underline"
+                    >
+                        Log in
+                    </Link>
+
+
+                </p>
+
+            }
+
+        >
+
+
+            <form
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-5"
+            >
+
+
+
+                <div className="space-y-2">
+
+                    <Label htmlFor="fullName">
+                        Full name
+                    </Label>
+
+
+                    <Input
+                        id="fullName"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        required
+                    />
+
+                </div>
+
+
+
+                <div className="space-y-2">
+
+                    <Label htmlFor="email">
+                        Email
+                    </Label>
+
+
+                    <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+
+                </div>
+
+
+
+                <div className="space-y-2">
+
+                    <Label htmlFor="password">
+                        Password
+                    </Label>
+
+
+                    <Input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        minLength={6}
+                        required
+                    />
+
+                </div>
+
+
+
+                {error && (
+
+                    <Alert variant="destructive">
+
+                        <AlertDescription>
+                            {error}
+                        </AlertDescription>
+
+                    </Alert>
+
+                )}
+
+
+
+                <Button
+                    disabled={isLoading}
+                >
+
+                    {
+                        isLoading
+                            ? "Creating account..."
+                            : "Create account"
+                    }
+
+                </Button>
+
+
+            </form>
+
+
+        </AuthCard>
+
+    );
 };
