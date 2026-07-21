@@ -7,10 +7,19 @@ import { fetchLostReports, fetchSightingReports } from "../../lib/reportsApi";
 import type { MapMarker } from "../../types/report";
 
 const MERIDA_CENTER = { longitude: -89.6237, latitude: 20.9674 };
-const MAP_STYLE = "https://tiles.openfreemap.org/styles/liberty";
+
+type MapStyleKey = "liberty" | "dark" | "fiord";
+
+const MAP_STYLES: Record<MapStyleKey, { label: string; url: string }> = {
+  liberty: { label: "Light", url: "https://tiles.openfreemap.org/styles/liberty" },
+  dark: { label: "Dark", url: "https://tiles.openfreemap.org/styles/dark" },
+  fiord: { label: "Fiord", url: "https://tiles.openfreemap.org/styles/fiord" },
+};
 
 export const MapPage = (): ReactElement => {
   const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
+  const [is3D, setIs3D] = useState<boolean>(false);
+  const [styleKey, setStyleKey] = useState<MapStyleKey>("liberty");
 
   const lostReportsQuery = useQuery({
     queryKey: ["lost-reports", "active"],
@@ -50,7 +59,7 @@ export const MapPage = (): ReactElement => {
 
   return (
     <div className="flex h-[calc(100vh-73px)] w-full flex-col">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Map</h1>
           <p className="text-sm text-muted-foreground">
@@ -59,6 +68,33 @@ export const MapPage = (): ReactElement => {
         </div>
 
         <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-1 rounded-full border border-border p-1">
+            {(Object.keys(MAP_STYLES) as MapStyleKey[]).map((key) => (
+              <button
+                key={key}
+                onClick={() => setStyleKey(key)}
+                className={`rounded-full px-3 py-1 font-medium transition ${
+                  styleKey === key
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {MAP_STYLES[key].label}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setIs3D((prev) => !prev)}
+            className={`rounded-full border px-3 py-1 font-medium transition ${
+              is3D
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            3D
+          </button>
+
           <span className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full bg-red-500" />
             Lost
@@ -77,7 +113,9 @@ export const MapPage = (): ReactElement => {
             latitude: MERIDA_CENTER.latitude,
             zoom: 12,
           }}
-          mapStyle={MAP_STYLE}
+          pitch={is3D ? 60 : 0}
+          bearing={is3D ? -20 : 0}
+          mapStyle={MAP_STYLES[styleKey].url}
           style={{ width: "100%", height: "100%" }}
         >
           {markers.map((marker) => (
