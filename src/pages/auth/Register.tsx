@@ -212,9 +212,7 @@ export const Register = (): ReactElement => {
 
 
 
-                <Button
-                    disabled={isLoading}
-                >
+                <Button type="submit" disabled={isLoading}>
 
                     {
                         isLoading

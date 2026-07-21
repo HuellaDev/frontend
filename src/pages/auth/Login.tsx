@@ -24,8 +24,10 @@ export const Login = (): ReactElement => {
 
 
     const handleSubmit = async (
+
         e: FormEvent<HTMLFormElement>
     ) => {
+        console.log("handleSubmit disparado");
 
         e.preventDefault();
 
@@ -157,7 +159,7 @@ export const Login = (): ReactElement => {
 
 
 
-                <Button disabled={isLoading}>
+                <Button type="submit" disabled={isLoading}>
 
                     {
                         isLoading
