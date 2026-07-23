@@ -1,9 +1,10 @@
-import { useMemo, useRef, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Map, { Marker, Popup, type MapRef } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { fetchLostReports, fetchSightingReports } from "../../lib/reportsApi";
+import { useGeolocation } from "../../hooks/useGeolocation";
 import type { MapMarker } from "../../types/report";
 
 const MERIDA_CENTER = { longitude: -89.6237, latitude: 20.9674 };
@@ -16,20 +17,14 @@ const MAP_STYLES: Record<MapStyleKey, { label: string; url: string }> = {
   fiord: { label: "Fiord", url: "https://tiles.openfreemap.org/styles/fiord" },
 };
 
-interface UserLocation {
-  longitude: number;
-  latitude: number;
-}
-
 export const MapPage = (): ReactElement => {
   const mapRef = useRef<MapRef>(null);
 
   const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
   const [is3D, setIs3D] = useState<boolean>(false);
   const [styleKey, setStyleKey] = useState<MapStyleKey>("liberty");
-  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
-  const [isLocating, setIsLocating] = useState<boolean>(false);
-  const [locationError, setLocationError] = useState<string | null>(null);
+
+  const { location: userLocation, isLocating, error: locationError, locate } = useGeolocation();
 
   const lostReportsQuery = useQuery({
     queryKey: ["lost-reports", "active"],
@@ -68,42 +63,18 @@ export const MapPage = (): ReactElement => {
   const isLoading = lostReportsQuery.isLoading || sightingReportsQuery.isLoading;
 
   const handleLocateMe = (): void => {
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation is not supported by your browser.");
-      return;
-    }
-
-    setIsLocating(true);
-    setLocationError(null);
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const location: UserLocation = {
-          longitude: position.coords.longitude,
-          latitude: position.coords.latitude,
-        };
-
-        setUserLocation(location);
-        setIsLocating(false);
-
-        mapRef.current?.flyTo({
-          center: [location.longitude, location.latitude],
-          zoom: 14,
-          duration: 1500,
-        });
-      },
-      (error) => {
-        setIsLocating(false);
-
-        if (error.code === error.PERMISSION_DENIED) {
-          setLocationError("Location permission denied.");
-        } else {
-          setLocationError("Could not get your location.");
-        }
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+    locate();
   };
+
+  useEffect(() => {
+    if (userLocation) {
+      mapRef.current?.flyTo({
+        center: [userLocation.longitude, userLocation.latitude],
+        zoom: 14,
+        duration: 1500,
+      });
+    }
+  }, [userLocation]);
 
   return (
     <div className="flex h-[calc(100vh-73px)] w-full flex-col">
