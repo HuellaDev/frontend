@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import Map, { Marker, Popup, type MapRef } from "react-map-gl/maplibre";
+import MapGL, { Marker, Popup, type MapRef } from "react-map-gl/maplibre";
+import { X, Locate, Box } from "lucide-react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { fetchLostReports, fetchSightingReports } from "../../lib/reportsApi";
 import { useGeolocation } from "../../hooks/useGeolocation";
+import { Button } from "@/components/ui/button";
 import type { MapMarker } from "../../types/report";
 
 const MERIDA_CENTER = { longitude: -89.6237, latitude: 20.9674 };
@@ -17,10 +19,39 @@ const MAP_STYLES: Record<MapStyleKey, { label: string; url: string }> = {
   fiord: { label: "Fiord", url: "https://tiles.openfreemap.org/styles/fiord" },
 };
 
+interface MarkerGroup {
+  key: string;
+  longitude: number;
+  latitude: number;
+  markers: MapMarker[];
+}
+
+const groupNearbyMarkers = (markers: MapMarker[]): MarkerGroup[] => {
+  const groups = new Map<string, MarkerGroup>();
+
+  for (const marker of markers) {
+    const key = `${marker.latitude.toFixed(4)},${marker.longitude.toFixed(4)}`;
+    const existing = groups.get(key);
+
+    if (existing) {
+      existing.markers.push(marker);
+    } else {
+      groups.set(key, {
+        key,
+        longitude: marker.longitude,
+        latitude: marker.latitude,
+        markers: [marker],
+      });
+    }
+  }
+
+  return Array.from(groups.values());
+};
+
 export const MapPage = (): ReactElement => {
   const mapRef = useRef<MapRef>(null);
 
-  const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<MarkerGroup | null>(null);
   const [is3D, setIs3D] = useState<boolean>(false);
   const [styleKey, setStyleKey] = useState<MapStyleKey>("liberty");
 
@@ -60,11 +91,9 @@ export const MapPage = (): ReactElement => {
     return [...lostMarkers, ...sightingMarkers];
   }, [lostReportsQuery.data, sightingReportsQuery.data]);
 
-  const isLoading = lostReportsQuery.isLoading || sightingReportsQuery.isLoading;
+  const markerGroups = useMemo(() => groupNearbyMarkers(markers), [markers]);
 
-  const handleLocateMe = (): void => {
-    locate();
-  };
+  const isLoading = lostReportsQuery.isLoading || sightingReportsQuery.isLoading;
 
   useEffect(() => {
     if (userLocation) {
@@ -86,72 +115,60 @@ export const MapPage = (): ReactElement => {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 text-sm">
+        <div className="flex flex-wrap items-center gap-3 text-sm">
           <div className="flex items-center gap-1 rounded-full border border-border p-1">
             {(Object.keys(MAP_STYLES) as MapStyleKey[]).map((key) => (
-              <button
+              <Button
                 key={key}
+                type="button"
+                size="sm"
+                variant={styleKey === key ? "default" : "ghost"}
+                className="h-7 rounded-full px-3 text-xs"
                 onClick={() => setStyleKey(key)}
-                className={`rounded-full px-3 py-1 font-medium transition ${
-                  styleKey === key
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
               >
                 {MAP_STYLES[key].label}
-              </button>
+              </Button>
             ))}
           </div>
 
-          <button
+          <Button
+            type="button"
+            size="sm"
+            variant={is3D ? "default" : "outline"}
+            className="h-7 gap-1.5 rounded-full px-3 text-xs"
             onClick={() => setIs3D((prev) => !prev)}
-            className={`rounded-full border px-3 py-1 font-medium transition ${
-              is3D
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border text-muted-foreground hover:text-foreground"
-            }`}
           >
+            <Box className="h-3.5 w-3.5" />
             3D
-          </button>
+          </Button>
 
-          <button
-            onClick={handleLocateMe}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1.5 rounded-full px-3 text-xs"
+            onClick={locate}
             disabled={isLocating}
-            className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1 font-medium text-muted-foreground transition hover:text-foreground disabled:opacity-50"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-4 w-4"
-            >
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-            </svg>
+            <Locate className="h-3.5 w-3.5" />
             {isLocating ? "Locating..." : "Locate me"}
-          </button>
+          </Button>
 
-          <span className="flex items-center gap-2">
+          <span className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-full bg-red-500" />
             Lost
           </span>
-          <span className="flex items-center gap-2">
+          <span className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-full bg-blue-500" />
             Sighted
           </span>
         </div>
       </div>
 
-      {locationError && (
-        <p className="mb-3 text-sm text-red-600">{locationError}</p>
-      )}
+      {locationError && <p className="mb-3 text-sm text-red-600">{locationError}</p>}
 
       <div className="relative flex-1 overflow-hidden rounded-2xl border border-border">
-        <Map
+        <MapGL
           ref={mapRef}
           initialViewState={{
             longitude: MERIDA_CENTER.longitude,
@@ -172,52 +189,103 @@ export const MapPage = (): ReactElement => {
             </Marker>
           )}
 
-          {markers.map((marker) => (
-            <Marker
-              key={`${marker.kind}-${marker.id}`}
-              longitude={marker.longitude}
-              latitude={marker.latitude}
-              onClick={(e) => {
-                e.originalEvent.stopPropagation();
-                setSelectedMarker(marker);
-              }}
-            >
-              <div
-                className={`h-4 w-4 cursor-pointer rounded-full border-2 border-white shadow-md ${
-                  marker.kind === "lost" ? "bg-red-500" : "bg-blue-500"
-                }`}
-              />
-            </Marker>
-          ))}
+          {markerGroups.map((group) => {
+            const hasLost = group.markers.some((m) => m.kind === "lost");
+            const color = hasLost ? "bg-red-500" : "bg-blue-500";
 
-          {selectedMarker && (
+            return (
+              <Marker
+                key={group.key}
+                longitude={group.longitude}
+                latitude={group.latitude}
+                onClick={(e) => {
+                  e.originalEvent.stopPropagation();
+                  setSelectedGroup(group);
+                }}
+              >
+                <div
+                  className={`relative flex h-5 w-5 cursor-pointer items-center justify-center rounded-full border-2 border-white shadow-md ${color}`}
+                >
+                  {group.markers.length > 1 && (
+                    <span className="text-[10px] font-bold text-white">
+                      {group.markers.length}
+                    </span>
+                  )}
+                </div>
+              </Marker>
+            );
+          })}
+
+          {selectedGroup && (
             <Popup
-              longitude={selectedMarker.longitude}
-              latitude={selectedMarker.latitude}
-              onClose={() => setSelectedMarker(null)}
+              longitude={selectedGroup.longitude}
+              latitude={selectedGroup.latitude}
+              onClose={() => setSelectedGroup(null)}
+              closeButton={false}
               closeOnClick={false}
               anchor="bottom"
+              maxWidth="280px"
             >
-              <div className="min-w-[180px] p-1 text-sm text-gray-900">
-                <p className="font-semibold">
-                  {selectedMarker.kind === "lost" ? "Lost" : "Sighted"}:{" "}
-                  {selectedMarker.report.AnimalProfile.species}
-                </p>
-                {selectedMarker.report.AnimalProfile.main_color && (
-                  <p className="text-gray-600">
-                    Color: {selectedMarker.report.AnimalProfile.main_color}
-                  </p>
-                )}
-                <Link
-                  to={`/reports/${selectedMarker.id}`}
-                  className="mt-2 inline-block font-medium text-blue-600 hover:underline"
+              <div className="relative p-1">
+                <button
+                  type="button"
+                  onClick={() => setSelectedGroup(null)}
+                  className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-gray-500 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-100 hover:text-gray-900"
                 >
-                  View report
-                </Link>
+                  <X className="h-3.5 w-3.5" />
+                </button>
+
+                <div className="flex max-h-80 flex-col gap-2 overflow-y-auto pr-1 pt-1">
+                  {selectedGroup.markers.map((marker) => {
+                    const photo =
+                      marker.report.Photos?.find((p) => p.is_primary) ?? marker.report.Photos?.[0];
+                    const isLost = marker.kind === "lost";
+                    const petName = isLost
+                      ? (marker.report as { pet_name: string | null }).pet_name
+                      : null;
+
+                    return (
+                      <Link
+                        key={marker.id}
+                        to={`/reports/${marker.id}`}
+                        className="flex gap-3 rounded-lg border border-gray-200 p-2 text-sm text-gray-900 hover:bg-gray-50"
+                      >
+                        {photo ? (
+                          <img
+                            src={photo.url}
+                            alt={marker.report.AnimalProfile.species}
+                            className="h-16 w-16 shrink-0 rounded-md object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md bg-gray-100 text-xl">
+                            🐾
+                          </div>
+                        )}
+
+                        <div className="flex flex-col justify-center">
+                          <span
+                            className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase text-white ${
+                              isLost ? "bg-red-500" : "bg-blue-500"
+                            }`}
+                          >
+                            {isLost ? "Lost" : "Sighted"}
+                          </span>
+                          <p className="mt-1 font-semibold">
+                            {petName || marker.report.AnimalProfile.species}
+                          </p>
+                          <p className="text-gray-600">
+                            {marker.report.AnimalProfile.breed && `${marker.report.AnimalProfile.breed} · `}
+                            {marker.report.AnimalProfile.main_color}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
             </Popup>
           )}
-        </Map>
+        </MapGL>
       </div>
     </div>
   );

@@ -17,6 +17,12 @@ export interface ReportUser {
   profile_photo: string | null;
 }
 
+export interface Photo {
+  id: string;
+  url: string;
+  is_primary: boolean;
+}
+
 export interface LostReport {
   id: string;
   pet_name: string | null;
@@ -25,6 +31,7 @@ export interface LostReport {
   reward_amount: string | null;
   AnimalProfile: AnimalProfile;
   user: ReportUser;
+  Photos: Photo[];
 }
 
 export interface SightingReport {
@@ -33,6 +40,7 @@ export interface SightingReport {
   location: GeoPoint | null;
   AnimalProfile: AnimalProfile;
   user: ReportUser;
+  Photos: Photo[];
 }
 
 export type MapMarkerKind = "lost" | "sighting";
