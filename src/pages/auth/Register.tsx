@@ -27,9 +27,7 @@ export const Register = (): ReactElement => {
 
 
 
-    const handleSubmit = async (
-        e: FormEvent<HTMLFormElement>
-    ) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 
         e.preventDefault();
 

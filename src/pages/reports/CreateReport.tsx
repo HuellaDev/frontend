@@ -3,16 +3,9 @@ import { useState, type FormEvent, type ReactElement } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 
-import {
-  createLostReport,
-  createSightingReport,
-  uploadReportPhoto,
-} from "../../lib/reportsApi";
+import {createLostReport, createSightingReport, uploadReportPhoto,} from "../../lib/reportsApi";
 
-import {
-  useGeolocation,
-  type GeoLocation,
-} from "../../hooks/useGeolocation";
+import {useGeolocation, type GeoLocation, } from "../../hooks/useGeolocation";
 
 import {
   AnimalInformation,
@@ -27,7 +20,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
 const MERIDA_FALLBACK: GeoLocation = {
-  longitude: -89.6237,
+  longitude: -89.6237, //TODO cambiar esto de merida
   latitude: 20.9674,
 };
 
@@ -58,11 +51,9 @@ export const CreateReport = (): ReactElement => {
   const [radiusMeters, setRadiusMeters] = useState("1000");
 
   const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] =
-    useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
-  const [formError, setFormError] =
-    useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
 
   const mapCenter = gpsLocation ?? MERIDA_FALLBACK;

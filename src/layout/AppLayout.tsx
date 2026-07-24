@@ -37,7 +37,7 @@ export const AppLayout = (): ReactElement => {
             Huella
           </Link>
 
-          <div className="ml-autoflexitems-centergap-6text-sm">
+          <div className="ml-auto flex items-center gap-6 text-sm">
 
             <Link to="/" className={linkStyle}>
               Map
@@ -65,6 +65,7 @@ export const AppLayout = (): ReactElement => {
                 <button onClick={handleLogout} className={linkStyle}>
                   Logout
                 </button>
+
 
               </>
 

@@ -57,3 +57,37 @@ export const uploadReportPhoto = async (
   const { data } = await api.post("/photos", formData);
   return data;
 };
+
+export const fetchLostReportById = async (id: string): Promise<LostReport> => {
+  const { data } = await api.get<LostReport>(`/lost-reports/${id}`);
+  return data;
+};
+
+export const fetchSightingReportById = async (id: string): Promise<SightingReport> => {
+  const { data } = await api.get<SightingReport>(`/sighting-reports/${id}`);
+  return data;
+};
+
+export type ReportWithKind =
+  | { kind: "lost"; report: LostReport }
+  | { kind: "sighting"; report: SightingReport };
+
+export const fetchReportById = async (id: string): Promise<ReportWithKind> => {
+  try {
+    const report = await fetchLostReportById(id);
+    return { kind: "lost", report };
+  } catch {
+    const report = await fetchSightingReportById(id);
+    return { kind: "sighting", report };
+  }
+};
+
+export const updateReportStatus = async (
+  kind: "lost" | "sighting",
+  id: string,
+  status: string
+) => {
+  const path = kind === "lost" ? `/lost-reports/${id}/status` : `/sighting-reports/${id}/status`;
+  const { data } = await api.patch(path, { status });
+  return data;
+};

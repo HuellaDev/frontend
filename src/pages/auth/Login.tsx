@@ -27,17 +27,14 @@ export const Login = (): ReactElement => {
 
     e: FormEvent<HTMLFormElement>
   ) => {
-    console.log("handleSubmit disparado");
-
+   
     e.preventDefault();
 
     setError(null);
     setIsLoading(true);
 
 
-    const {
-      error: signInError
-    } = await supabase.auth.signInWithPassword({
+    const {error: signInError} = await supabase.auth.signInWithPassword({
       email,
       password,
     });

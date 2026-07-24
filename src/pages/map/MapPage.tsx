@@ -18,7 +18,7 @@ import {
 import type { MapStyleKey } from "@/components/map-page";
 
 
-const MERIDA_CENTER = {
+const MERIDA_CENTER = { //TODO cambiar esto de merida center por la ubicacion o ip del dispositivo
   longitude: -89.6237,
   latitude: 20.9674,
 };
@@ -51,17 +51,11 @@ export const MapPage = (): ReactElement => {
 
   const mapRef = useRef<MapRef>(null);
 
+  const [selectedGroup, setSelectedGroup] = useState<any>(null);
 
-  const [selectedGroup, setSelectedGroup] =
-    useState<any>(null);
+  const [is3D, setIs3D] = useState(false);
 
-
-  const [is3D, setIs3D] =
-    useState(false);
-
-
-  const [styleKey, setStyleKey] =
-    useState<MapStyleKey>("liberty");
+  const [styleKey, setStyleKey] = useState<MapStyleKey>("liberty");
 
 
   const {
@@ -96,9 +90,18 @@ export const MapPage = (): ReactElement => {
 
   return (
 
-    <div className="-my-8flexh-[calc(100vh-73px)]w-fullflex-coloverflow-hidden">
+    <div className=" -my-8 flex h-[calc(100vh-73px)] w-full flex-col  overflow-hidden">
 
-      <div className=" mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div
+        className="
+          mb-4
+          flex
+          flex-wrap
+          items-center
+          justify-between
+          gap-3
+        "
+      >
 
         <div>
 
@@ -135,7 +138,13 @@ export const MapPage = (): ReactElement => {
       {
         locationError && (
 
-          <p className=" mb-3 text-sm text-red-600">
+          <p
+            className="
+              mb-3
+              text-sm
+              text-red-600
+            "
+          >
             {locationError}
           </p>
 
@@ -144,7 +153,17 @@ export const MapPage = (): ReactElement => {
 
 
 
-      <div className=" relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-border">
+      <div
+        className="
+    relative
+    min-h-0
+    flex-1
+    overflow-hidden
+    rounded-2xl
+    border
+    border-border
+  "
+      >
         <MapGL
 
           ref={mapRef}

@@ -17,9 +17,7 @@ interface MarkerGroup {
 }
 
 
-const groupNearbyMarkers = (
-  markers: MapMarker[],
-): MarkerGroup[] => {
+const groupNearbyMarkers = (markers: MapMarker[], ): MarkerGroup[] => {
   const groups = new Map<string, MarkerGroup>();
 
   for (const marker of markers) {
