@@ -8,10 +8,20 @@ export const fetchLostReports = async (): Promise<LostReport[]> => {
   return data;
 };
 
+export const fetchMyLostReports = async (): Promise<LostReport[]> => {
+  const { data } = await api.get<LostReport[]>("/lost-reports/mine");
+  return data;
+};
+
 export const fetchSightingReports = async (): Promise<SightingReport[]> => {
   const { data } = await api.get<SightingReport[]>("/sighting-reports", {
     params: { status: "active" },
   });
+  return data;
+};
+
+export const fetchMySightingReports = async (): Promise<SightingReport[]> => {
+  const { data } = await api.get<SightingReport[]>("/sighting-reports/mine");
   return data;
 };
 
