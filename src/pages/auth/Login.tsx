@@ -13,168 +13,134 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const Login = (): ReactElement => {
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-    const [error, setError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
 
 
-    const handleSubmit = async (
+  const handleSubmit = async (
 
-        e: FormEvent<HTMLFormElement>
-    ) => {
-        console.log("handleSubmit disparado");
+    e: FormEvent<HTMLFormElement>
+  ) => {
+    console.log("handleSubmit disparado");
 
-        e.preventDefault();
+    e.preventDefault();
 
-        setError(null);
-        setIsLoading(true);
+    setError(null);
+    setIsLoading(true);
 
 
-        const {
-            error: signInError
-        } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+    const {
+      error: signInError
+    } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
 
-        setIsLoading(false);
+    setIsLoading(false);
 
+    if (signInError) {
 
+      setError(signInError.message);
+      return;
 
-        if (signInError) {
+    }
 
-            setError(signInError.message);
-            return;
+    navigate("/");
 
-        }
+  };
 
+  return (
 
-        navigate("/");
+    <AuthCard
 
-    };
+      title="Welcome back"
 
+      description="Sign in to continue to Huella."
 
+      footer={
+        <p className=" text-center text-sm text-muted-foreground">
 
-    return (
+          Don't have an account?{" "}
 
-        <AuthCard
+          <Link
+            to="/register"
+            className=" font-medium text-primary hover:underline"
+          >
+            Register
+          </Link>
 
-            title="Welcome back"
+        </p>
+      }
 
-            description="Sign in to continue to Huella."
+    >
 
-            footer={
-                <p className=" text-center text-sm text-muted-foreground">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-5"
+      >
 
-                    Don't have an account?{" "}
+        <div className="space-y-2">
 
-                    <Link
-                        to="/register"
-                        className=" font-medium text-primary hover:underline"
-                    >
-                        Register
-                    </Link>
+          <Label htmlFor="email">
+            Email
+          </Label>
 
-                </p>
-            }
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
 
-        >
+          />
 
+        </div>
 
-            <form
-                onSubmit={handleSubmit}
-                className="flex flex-col gap-5"
-            >
+        <div className="space-y-2">
 
+          <Label htmlFor="password">
+            Password
+          </Label>
 
-                <div className="space-y-2">
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
-                    <Label htmlFor="email">
-                        Email
-                    </Label>
 
+        </div>
 
-                    <Input
+        {error && (
 
-                        id="email"
+          <Alert variant="destructive">
 
-                        type="email"
+            <AlertDescription>
+              {error}
+            </AlertDescription>
 
-                        value={email}
+          </Alert>
 
-                        onChange={(e) => setEmail(e.target.value)}
+        )}
 
-                        required
+        <Button type="submit" disabled={isLoading}>
 
-                    />
+          {isLoading ? "Logging in...": "Log in"}
 
+        </Button>
 
-                </div>
+      </form>
 
+    </AuthCard>
 
-
-                <div className="space-y-2">
-
-                    <Label htmlFor="password">
-                        Password
-                    </Label>
-
-
-                    <Input
-
-                        id="password"
-
-                        type="password"
-
-                        value={password}
-
-                        onChange={(e) => setPassword(e.target.value)}
-
-                        required
-
-                    />
-
-
-                </div>
-
-
-
-                {error && (
-
-                    <Alert variant="destructive">
-
-                        <AlertDescription>
-                            {error}
-                        </AlertDescription>
-
-                    </Alert>
-
-                )}
-
-
-
-                <Button type="submit" disabled={isLoading}>
-
-                    {
-                        isLoading
-                            ? "Logging in..."
-                            : "Log in"
-                    }
-
-                </Button>
-
-
-
-            </form>
-
-
-        </AuthCard>
-
-    );
+  );
 };

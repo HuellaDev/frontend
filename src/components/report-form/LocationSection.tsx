@@ -8,18 +8,13 @@ import { Label } from "@/components/ui/label";
 import { LocationPicker } from "@/components/map/LocationPicker";
 
 import type { GeoLocation } from "../../hooks/useGeolocation";
-
 interface LocationSectionProps {
   mapCenter: GeoLocation;
-
   pinLocation: GeoLocation | null;
   setPinLocation: (location: GeoLocation) => void;
-
   gpsLocation: GeoLocation | null;
-
   isLocating: boolean;
   locationError: string | null;
-
   locate: () => void;
 }
 

@@ -69,7 +69,6 @@ export const CreateReport = (): ReactElement => {
 
   const finalLocation = pinLocation ?? gpsLocation;
 
-
   const mutation = useMutation({
     mutationFn: async () => {
       if (!finalLocation) {
@@ -108,18 +107,15 @@ export const CreateReport = (): ReactElement => {
         ] as [number, number],
       };
 
-
       const report =
         kind === "lost"
           ? await createLostReport(payload)
           : await createSightingReport(payload);
 
-
       const reportId =
         kind === "lost"
           ? report.lostReport.id
           : report.sightingReport.id;
-
 
       if (photo) {
         await uploadReportPhoto(
@@ -129,10 +125,8 @@ export const CreateReport = (): ReactElement => {
         );
       }
 
-
       return report;
     },
-
 
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -147,7 +141,6 @@ export const CreateReport = (): ReactElement => {
     },
   });
 
-
   const handleSubmit = (
     e: FormEvent<HTMLFormElement>,
   ): void => {
@@ -155,12 +148,10 @@ export const CreateReport = (): ReactElement => {
 
     setFormError(null);
 
-
     if (!species.trim()) {
       setFormError("Species is required.");
       return;
     }
-
 
     if (!finalLocation) {
       setFormError(
@@ -170,36 +161,30 @@ export const CreateReport = (): ReactElement => {
       return;
     }
 
-
     mutation.mutate();
   };
 
-
   return (
     <div className="mx-auto max-w-lg space-y-6 pb-10">
-
       <div>
         <h1 className="text-2xl font-semibold">
           New Report
         </h1>
-
         <p className="text-sm text-muted-foreground">
           Report a lost pet or an animal sighting.
         </p>
       </div>
-
 
       <ReportTypeSelector
         kind={kind}
         onChange={setKind}
       />
 
-
       <form
         onSubmit={handleSubmit}
         className="space-y-5"
       >
-
+        
         <AnimalInformation
           kind={kind}
 
@@ -219,7 +204,6 @@ export const CreateReport = (): ReactElement => {
           setDescription={setDescription}
         />
 
-
         {kind === "lost" && (
           <LostInformation
             contactPhone={contactPhone}
@@ -233,7 +217,6 @@ export const CreateReport = (): ReactElement => {
           />
         )}
 
-
         <PhotoUploader
           photo={photo}
           setPhoto={setPhoto}
@@ -241,7 +224,6 @@ export const CreateReport = (): ReactElement => {
           photoPreview={photoPreview}
           setPhotoPreview={setPhotoPreview}
         />
-
 
         <LocationSection
           mapCenter={mapCenter}
@@ -256,7 +238,6 @@ export const CreateReport = (): ReactElement => {
 
           locate={locate}
         />
-
 
         {formError && (
           <Alert variant="destructive">
@@ -274,7 +255,6 @@ export const CreateReport = (): ReactElement => {
             </AlertDescription>
           </Alert>
         )}
-
 
         <Button
           type="submit"

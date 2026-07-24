@@ -5,41 +5,30 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 import type { ReportKind } from "./ReportTypeSelector";
-
 interface AnimalInformationProps {
   kind: ReportKind;
-
   petName: string;
   setPetName: Dispatch<SetStateAction<string>>;
-
   species: string;
   setSpecies: Dispatch<SetStateAction<string>>;
-
   breed: string;
   setBreed: Dispatch<SetStateAction<string>>;
-
   mainColor: string;
   setMainColor: Dispatch<SetStateAction<string>>;
-
   description: string;
   setDescription: Dispatch<SetStateAction<string>>;
 }
 
 export const AnimalInformation = ({
   kind,
-
   petName,
   setPetName,
-
   species,
   setSpecies,
-
   breed,
   setBreed,
-
   mainColor,
   setMainColor,
-
   description,
   setDescription,
 }: AnimalInformationProps): ReactElement => {

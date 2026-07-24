@@ -6,10 +6,8 @@ import { Label } from "@/components/ui/label";
 interface LostInformationProps {
   contactPhone: string;
   setContactPhone: Dispatch<SetStateAction<string>>;
-
   rewardAmount: string;
   setRewardAmount: Dispatch<SetStateAction<string>>;
-
   radiusMeters: string;
   setRadiusMeters: Dispatch<SetStateAction<string>>;
 }

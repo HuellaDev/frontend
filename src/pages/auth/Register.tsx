@@ -33,19 +33,14 @@ export const Register = (): ReactElement => {
 
         e.preventDefault();
 
-
         setError(null);
         setIsLoading(true);
-
-
 
         const { data, error: signUpError } =
             await supabase.auth.signUp({
                 email,
                 password,
             });
-
-
 
         if (signUpError) {
 
@@ -54,8 +49,6 @@ export const Register = (): ReactElement => {
             return;
 
         }
-
-
 
         if (!data.session) {
 
@@ -68,8 +61,6 @@ export const Register = (): ReactElement => {
             return;
 
         }
-
-
 
         try {
 
@@ -90,14 +81,11 @@ export const Register = (): ReactElement => {
 
         }
 
-
-
         setIsLoading(false);
 
         navigate("/");
 
     };
-
 
 
     return (
@@ -110,14 +98,9 @@ export const Register = (): ReactElement => {
 
             footer={
 
-                <p className="
-          text-center
-          text-sm
-          text-muted-foreground
-        ">
+                <p className="text-centertext-smtext-muted-foreground">
 
                     Already have an account?{" "}
-
 
                     <Link
                         to="/login"
@@ -126,27 +109,22 @@ export const Register = (): ReactElement => {
                         Log in
                     </Link>
 
-
                 </p>
 
             }
 
         >
 
-
             <form
                 onSubmit={handleSubmit}
                 className="flex flex-col gap-5"
             >
-
-
 
                 <div className="space-y-2">
 
                     <Label htmlFor="fullName">
                         Full name
                     </Label>
-
 
                     <Input
                         id="fullName"
@@ -158,13 +136,11 @@ export const Register = (): ReactElement => {
                 </div>
 
 
-
                 <div className="space-y-2">
 
                     <Label htmlFor="email">
                         Email
                     </Label>
-
 
                     <Input
                         id="email"
@@ -176,14 +152,11 @@ export const Register = (): ReactElement => {
 
                 </div>
 
-
-
                 <div className="space-y-2">
 
                     <Label htmlFor="password">
                         Password
                     </Label>
-
 
                     <Input
                         id="password"
@@ -195,8 +168,6 @@ export const Register = (): ReactElement => {
                     />
 
                 </div>
-
-
 
                 {error && (
 
@@ -210,8 +181,6 @@ export const Register = (): ReactElement => {
 
                 )}
 
-
-
                 <Button type="submit" disabled={isLoading}>
 
                     {
@@ -222,9 +191,7 @@ export const Register = (): ReactElement => {
 
                 </Button>
 
-
             </form>
-
 
         </AuthCard>
 
