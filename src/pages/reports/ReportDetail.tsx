@@ -27,14 +27,20 @@ export const ReportDetail = (): ReactElement => {
   const reportType = kind === "lost" ? "lost_report" : "sighting_report";
   const isOwner = session?.user.id === report.user.id;
 
-  return (
-    <div className="mx-auto max-w-2xl space-y-6 pb-10">
-      <ReportGallery photos={report.Photos ?? []} />
-      <ReportInfo kind={kind} report={report} />
+ return (
+  <div className="mx-auto w-full max-w-4xl space-y-6 rounded-xl border border-border bg-background p-6 pb-10">
+    <ReportGallery photos={report.Photos ?? []} />
+    <ReportInfo kind={kind} report={report} />
 
-      {isOwner && <ReportActions kind={kind} reportId={report.id} status={report.status} />}
+    {isOwner && (
+      <ReportActions
+        kind={kind}
+        reportId={report.id}
+        status={report.status}
+      />
+    )}
 
-      <CommentsSection reportType={reportType} reportId={report.id} />
-    </div>
-  );
+    <CommentsSection reportType={reportType} reportId={report.id} />
+  </div>
+);
 };

@@ -8,6 +8,7 @@ interface ReportGalleryProps {
 
 export const ReportGallery = ({ photos }: ReportGalleryProps): ReactElement => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
 
   if (photos.length === 0) {
     return (
@@ -19,11 +20,21 @@ export const ReportGallery = ({ photos }: ReportGalleryProps): ReactElement => {
 
   return (
     <div className="space-y-2">
-      <img
-        src={photos[activeIndex].url}
-        alt="Report"
-        className="h-64 w-full rounded-xl border border-border object-cover sm:h-80"
-      />
+      <div className="relative">
+        <img
+          src={photos[activeIndex].url}
+          alt="Report"
+          className="aspect-video w-full rounded-xl border border-border object-cover"
+        />
+
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="absolute right-3 top-3 rounded-full bg-black/50 p-2 text-white backdrop-blur-sm hover:bg-black/70"
+        >
+          <Icon icon="mdi:magnify-plus" className="h-5 w-5" />
+        </button>
+      </div>
 
       {photos.length > 1 && (
         <div className="flex gap-2 overflow-x-auto">
@@ -32,13 +43,24 @@ export const ReportGallery = ({ photos }: ReportGalleryProps): ReactElement => {
               key={photo.id}
               type="button"
               onClick={() => setActiveIndex(index)}
-              className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 ${
-                index === activeIndex ? "border-primary" : "border-transparent"
-              }`}
+              className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 ${index === activeIndex ? "border-primary" : "border-transparent"
+                }`}
             >
               <img src={photo.url} alt="" className="h-full w-full object-cover" />
             </button>
           ))}
+        </div>
+      )}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setIsOpen(false)}
+        >
+          <img
+            src={photos[activeIndex].url}
+            alt="Report"
+            className="max-h-[90vh] max-w-full rounded-xl object-contain"
+          />
         </div>
       )}
     </div>
