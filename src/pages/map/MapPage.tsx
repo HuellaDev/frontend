@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState, type ReactElement } from "react";
 
-import MapGL, { type MapRef, type ViewStateChangeEvent } from "react-map-gl/maplibre";
+import MapGL, { Popup, type MapRef, type ViewStateChangeEvent } from "react-map-gl/maplibre";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
+import { useQuery } from "@tanstack/react-query";
 import { useGeolocation } from "../../hooks/useGeolocation";
 import { useInitialLocation } from "../../hooks/useInitialLocation";
 import { useMapReports } from "../../hooks/useMapReports";
+import { fetchOrganizations } from "../../lib/organizationsApi";
+import { OrganizationMarker } from "@/components/map-page/OrganizationMarker";
+import type { Organization } from "../../types/organization";
 
 import {
   MapControls,
@@ -31,6 +35,7 @@ export const MapPage = (): ReactElement => {
   const mapRef = useRef<MapRef>(null);
 
   const [selectedGroup, setSelectedGroup] = useState<MarkerGroup | null>(null);
+  const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
   const [is3D, setIs3D] = useState(false);
   const [styleKey, setStyleKey] = useState<MapStyleKey>("liberty");
   const [zoom, setZoom] = useState(12);
@@ -44,6 +49,11 @@ export const MapPage = (): ReactElement => {
 
   const { location: initialLocation, source: initialSource } = useInitialLocation();
   const { markerGroups, markers, isLoading } = useMapReports();
+
+  const organizationsQuery = useQuery({
+    queryKey: ["organizations"],
+    queryFn: fetchOrganizations,
+  });
 
   useEffect(() => {
     if (!initialLocation) return;
@@ -112,6 +122,10 @@ export const MapPage = (): ReactElement => {
         >
           {userLocation && <UserMarker location={userLocation} />}
 
+          {organizationsQuery.data?.map((org) => (
+            <OrganizationMarker key={org.id} organization={org} onSelect={setSelectedOrg} />
+          ))}
+
           {showMarkers &&
             markerGroups.map((group) => (
               <ReportMarker key={group.key} group={group} onSelect={setSelectedGroup} />
@@ -119,6 +133,23 @@ export const MapPage = (): ReactElement => {
 
           {selectedGroup && (
             <ReportPopup group={selectedGroup} onClose={() => setSelectedGroup(null)} />
+          )}
+
+          {selectedOrg?.location && (
+            <Popup
+              longitude={selectedOrg.location.coordinates[0]}
+              latitude={selectedOrg.location.coordinates[1]}
+              onClose={() => setSelectedOrg(null)}
+              closeOnClick={false}
+              anchor="bottom"
+            >
+              <div className="p-1 text-sm text-gray-900">
+                <p className="font-semibold">{selectedOrg.name}</p>
+                <p className="capitalize text-gray-600">{selectedOrg.type}</p>
+                {selectedOrg.phone && <p className="text-gray-600">{selectedOrg.phone}</p>}
+                {selectedOrg.address && <p className="text-gray-600">{selectedOrg.address}</p>}
+              </div>
+            </Popup>
           )}
         </MapGL>
       </div>
