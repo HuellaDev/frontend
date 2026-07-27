@@ -3,9 +3,9 @@ import { useState, type FormEvent, type ReactElement } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 
-import {createLostReport, createSightingReport, uploadReportPhoto,} from "../../lib/reportsApi";
+import { createLostReport, createSightingReport, uploadReportPhoto } from "../../lib/reportsApi";
 
-import {useGeolocation, type GeoLocation, } from "../../hooks/useGeolocation";
+import { useGeolocation, type GeoLocation } from "../../hooks/useGeolocation";
 
 import {
   AnimalInformation,
@@ -20,25 +20,20 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
 const MERIDA_FALLBACK: GeoLocation = {
-  longitude: -89.6237, //TODO cambiar esto de merida
+  longitude: -89.6237,
   latitude: 20.9674,
 };
+
+const PHONE_REGEX = /^\+?[0-9\s\-()]{7,15}$/;
 
 export const CreateReport = (): ReactElement => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const {
-    location: gpsLocation,
-    isLocating,
-    error: locationError,
-    locate,
-  } = useGeolocation();
+  const { location: gpsLocation, isLocating, error: locationError, locate } = useGeolocation();
 
   const [kind, setKind] = useState<ReportKind>("lost");
-
-  const [pinLocation, setPinLocation] =
-    useState<GeoLocation | null>(null);
+  const [pinLocation, setPinLocation] = useState<GeoLocation | null>(null);
 
   const [species, setSpecies] = useState("");
   const [breed, setBreed] = useState("");
@@ -55,9 +50,7 @@ export const CreateReport = (): ReactElement => {
 
   const [formError, setFormError] = useState<string | null>(null);
 
-
   const mapCenter = gpsLocation ?? MERIDA_FALLBACK;
-
   const finalLocation = pinLocation ?? gpsLocation;
 
   const mutation = useMutation({
@@ -71,72 +64,32 @@ export const CreateReport = (): ReactElement => {
         breed: breed || undefined,
         main_color: mainColor || undefined,
         description: description || undefined,
-
-        pet_name:
-          kind === "lost"
-            ? petName || undefined
-            : undefined,
-
-        contact_phone:
-          kind === "lost"
-            ? contactPhone || undefined
-            : undefined,
-
-        reward_amount:
-          kind === "lost" && rewardAmount
-            ? Number(rewardAmount)
-            : undefined,
-
-        search_radius_meters:
-          kind === "lost"
-            ? Number(radiusMeters)
-            : undefined,
-
-        coordinates: [
-          finalLocation.longitude,
-          finalLocation.latitude,
-        ] as [number, number],
+        pet_name: kind === "lost" ? petName || undefined : undefined,
+        contact_phone: kind === "lost" ? contactPhone || undefined : undefined,
+        reward_amount: kind === "lost" && rewardAmount ? Number(rewardAmount) : undefined,
+        search_radius_meters: kind === "lost" ? Number(radiusMeters) : undefined,
+        coordinates: [finalLocation.longitude, finalLocation.latitude] as [number, number],
       };
 
       const report =
-        kind === "lost"
-          ? await createLostReport(payload)
-          : await createSightingReport(payload);
+        kind === "lost" ? await createLostReport(payload) : await createSightingReport(payload);
 
-      const reportId =
-        kind === "lost"
-          ? report.lostReport.id
-          : report.sightingReport.id;
+      const reportId = kind === "lost" ? report.lostReport.id : report.sightingReport.id;
 
-      if (photo) {
-        await uploadReportPhoto(
-          photo,
-          reportId,
-          kind,
-        );
-      }
+      await uploadReportPhoto(photo!, reportId, kind);
 
       return report;
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["lost-reports"],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["sighting-reports"],
-      });
-
+      queryClient.invalidateQueries({ queryKey: ["lost-reports"] });
+      queryClient.invalidateQueries({ queryKey: ["sighting-reports"] });
       navigate("/");
     },
   });
 
-  const handleSubmit = (
-    e: FormEvent<HTMLFormElement>,
-  ): void => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
-
     setFormError(null);
 
     if (!species.trim()) {
@@ -144,11 +97,18 @@ export const CreateReport = (): ReactElement => {
       return;
     }
 
-    if (!finalLocation) {
-      setFormError(
-        'Please set a location using "Use my location".',
-      );
+    if (!photo) {
+      setFormError("A photo is required.");
+      return;
+    }
 
+    if (kind === "lost" && contactPhone && !PHONE_REGEX.test(contactPhone)) {
+      setFormError("Contact phone format is invalid.");
+      return;
+    }
+
+    if (!finalLocation) {
+      setFormError('Please set a location using "Use my location".');
       return;
     }
 
@@ -158,39 +118,23 @@ export const CreateReport = (): ReactElement => {
   return (
     <div className="mx-auto max-w-lg space-y-6 pb-10">
       <div>
-        <h1 className="text-2xl font-semibold">
-          New Report
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Report a lost pet or an animal sighting.
-        </p>
+        <h1 className="text-2xl font-semibold">New Report</h1>
+        <p className="text-sm text-muted-foreground">Report a lost pet or an animal sighting.</p>
       </div>
 
-      <ReportTypeSelector
-        kind={kind}
-        onChange={setKind}
-      />
+      <ReportTypeSelector kind={kind} onChange={setKind} />
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-5"
-      >
-        
+      <form onSubmit={handleSubmit} className="space-y-5">
         <AnimalInformation
           kind={kind}
-
           petName={petName}
           setPetName={setPetName}
-
           species={species}
           setSpecies={setSpecies}
-
           breed={breed}
           setBreed={setBreed}
-
           mainColor={mainColor}
           setMainColor={setMainColor}
-
           description={description}
           setDescription={setDescription}
         />
@@ -199,10 +143,8 @@ export const CreateReport = (): ReactElement => {
           <LostInformation
             contactPhone={contactPhone}
             setContactPhone={setContactPhone}
-
             rewardAmount={rewardAmount}
             setRewardAmount={setRewardAmount}
-
             radiusMeters={radiusMeters}
             setRadiusMeters={setRadiusMeters}
           />
@@ -211,52 +153,36 @@ export const CreateReport = (): ReactElement => {
         <PhotoUploader
           photo={photo}
           setPhoto={setPhoto}
-
           photoPreview={photoPreview}
           setPhotoPreview={setPhotoPreview}
+          required
         />
 
         <LocationSection
           mapCenter={mapCenter}
-
           pinLocation={pinLocation}
           setPinLocation={setPinLocation}
-
           gpsLocation={gpsLocation}
-
           isLocating={isLocating}
           locationError={locationError}
-
           locate={locate}
         />
 
         {formError && (
           <Alert variant="destructive">
-            <AlertDescription>
-              {formError}
-            </AlertDescription>
+            <AlertDescription>{formError}</AlertDescription>
           </Alert>
         )}
-
 
         {mutation.isError && (
           <Alert variant="destructive">
-            <AlertDescription>
-              Something went wrong. Please try again.
-            </AlertDescription>
+            <AlertDescription>Something went wrong. Please try again.</AlertDescription>
           </Alert>
         )}
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={mutation.isPending}
-        >
-          {mutation.isPending
-            ? "Submitting..."
-            : "Submit report"}
+        <Button type="submit" className="w-full" disabled={mutation.isPending}>
+          {mutation.isPending ? "Submitting..." : "Submit report"}
         </Button>
-
       </form>
     </div>
   );

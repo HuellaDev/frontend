@@ -17,6 +17,8 @@ interface PhotoUploaderProps {
 
   photoPreview: string | null;
   setPhotoPreview: Dispatch<SetStateAction<string | null>>;
+
+  required?: boolean;
 }
 
 export const PhotoUploader = ({
@@ -24,6 +26,7 @@ export const PhotoUploader = ({
   setPhoto,
   photoPreview,
   setPhotoPreview,
+  required = false,
 }: PhotoUploaderProps): ReactElement => {
   useEffect(() => {
     if (!photo) {
@@ -40,16 +43,14 @@ export const PhotoUploader = ({
     };
   }, [photo, setPhotoPreview]);
 
-  const handlePhotoChange = (
-    e: ChangeEvent<HTMLInputElement>,
-  ): void => {
+  const handlePhotoChange = (e: ChangeEvent<HTMLInputElement>): void => {
     setPhoto(e.target.files?.[0] ?? null);
   };
 
   return (
     <div className="space-y-2">
       <Label>
-        Photo (recommended)
+        Photo {required ? "*" : "(recommended)"}
       </Label>
 
       {photoPreview ? (
@@ -86,17 +87,8 @@ export const PhotoUploader = ({
           "
         >
           <Camera className="h-8 w-8" />
-
-          <span>
-            Click to upload a photo
-          </span>
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoChange}
-            className="hidden"
-          />
+          <span>Click to upload a photo</span>
+          <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
         </label>
       )}
     </div>
