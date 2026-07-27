@@ -20,6 +20,7 @@ export const OrganizationMarker = ({
     <Marker
       longitude={longitude}
       latitude={latitude}
+      style={{ zIndex: 20 }}
       onClick={(e) => {
         e.originalEvent.stopPropagation();
         onSelect(organization);

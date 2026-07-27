@@ -1,4 +1,4 @@
-import type { GeoPoint } from "./report";
+import type { GeoPoint, Photo } from "./report";
 
 export interface Organization {
   id: string;
@@ -8,4 +8,5 @@ export interface Organization {
   type: string;
   location: GeoPoint | null;
   verified: boolean;
+  Photos: Photo[];
 }

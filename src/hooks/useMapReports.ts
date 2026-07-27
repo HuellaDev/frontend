@@ -6,42 +6,68 @@ import {
   fetchSightingReports,
 } from "../lib/reportsApi";
 
-import type { MapMarker } from "../types/report";
+import { fetchOrganizations } from "../lib/organizationsApi";
+
+import type {
+  MapMarker,
+  MarkerGroup,
+  MapPopupItem,
+} from "../types/report";
 
 
-interface MarkerGroup {
-  key: string;
-  longitude: number;
-  latitude: number;
-  markers: MapMarker[];
-}
 
+const groupItems = (
+  items: MapPopupItem[],
+): MarkerGroup[] => {
 
-const groupNearbyMarkers = (markers: MapMarker[], ): MarkerGroup[] => {
   const groups = new Map<string, MarkerGroup>();
 
-  for (const marker of markers) {
-    const key = `${marker.latitude.toFixed(4)},${marker.longitude.toFixed(4)}`;
+
+  for (const item of items) {
+
+    const longitude =
+      item.type === "report"
+        ? item.marker.longitude
+        : item.organization.location!.coordinates[0];
+
+
+    const latitude =
+      item.type === "report"
+        ? item.marker.latitude
+        : item.organization.location!.coordinates[1];
+
+
+    const key =
+      `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
+
 
     const existing = groups.get(key);
 
+
     if (existing) {
-      existing.markers.push(marker);
+
+      existing.items.push(item);
+
     } else {
+
       groups.set(key, {
         key,
-        longitude: marker.longitude,
-        latitude: marker.latitude,
-        markers: [marker],
+        longitude,
+        latitude,
+        items: [item],
       });
+
     }
   }
+
 
   return Array.from(groups.values());
 };
 
 
+
 export const useMapReports = () => {
+
 
   const lostReportsQuery = useQuery({
     queryKey: ["lost-reports", "active"],
@@ -55,14 +81,24 @@ export const useMapReports = () => {
   });
 
 
+  const organizationsQuery = useQuery({
+    queryKey: ["organizations"],
+    queryFn: fetchOrganizations,
+  });
+
+
+
   const markers = useMemo<MapMarker[]>(() => {
 
-    const lostMarkers: MapMarker[] =
+
+    const lostMarkers =
       (lostReportsQuery.data ?? [])
-        .filter((report) => report.last_seen_location)
+        .filter(
+          (report) => report.last_seen_location,
+        )
         .map((report) => ({
           id: report.id,
-          kind: "lost",
+          kind: "lost" as const,
           longitude:
             report.last_seen_location!.coordinates[0],
           latitude:
@@ -71,12 +107,15 @@ export const useMapReports = () => {
         }));
 
 
-    const sightingMarkers: MapMarker[] =
+
+    const sightingMarkers =
       (sightingReportsQuery.data ?? [])
-        .filter((report) => report.location)
+        .filter(
+          (report) => report.location,
+        )
         .map((report) => ({
           id: report.id,
-          kind: "sighting",
+          kind: "sighting" as const,
           longitude:
             report.location!.coordinates[0],
           latitude:
@@ -90,28 +129,67 @@ export const useMapReports = () => {
       ...sightingMarkers,
     ];
 
+
   }, [
     lostReportsQuery.data,
     sightingReportsQuery.data,
   ]);
 
 
-  const markerGroups = useMemo(
-    () => groupNearbyMarkers(markers),
-    [markers],
-  );
+
+
+  const markerGroups = useMemo(() => {
+
+
+    const items: MapPopupItem[] = [
+
+      ...markers.map((marker) => ({
+        type: "report" as const,
+        marker,
+      })),
+
+
+      ...(organizationsQuery.data ?? [])
+        .filter(
+          (org) => org.location,
+        )
+        .map((organization) => ({
+          type: "organization" as const,
+          organization,
+        })),
+
+
+    ];
+
+
+    return groupItems(items);
+
+
+  }, [
+    markers,
+    organizationsQuery.data,
+  ]);
+
+
 
 
   return {
+
     markers,
+
     markerGroups,
+
 
     isLoading:
       lostReportsQuery.isLoading ||
-      sightingReportsQuery.isLoading,
+      sightingReportsQuery.isLoading ||
+      organizationsQuery.isLoading,
+
 
     isError:
       lostReportsQuery.isError ||
-      sightingReportsQuery.isError,
+      sightingReportsQuery.isError ||
+      organizationsQuery.isError,
+
   };
 };

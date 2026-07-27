@@ -78,7 +78,7 @@ export const MapControls = ({
         {isLocating
           ? "Locating..."
           : "Locate me"}
-          
+
       </Button>
 
 
@@ -91,6 +91,11 @@ export const MapControls = ({
       <span className="flex items-center gap-1.5">
         <span className="h-3 w-3 rounded-full bg-blue-500" />
         Sighted
+      </span>
+
+      <span className="flex items-center gap-1.5">
+        <span className="h-3 w-3 rounded-full bg-green-600" />
+        Help Center
       </span>
 
     </div>

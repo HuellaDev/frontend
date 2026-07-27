@@ -1,30 +1,43 @@
 import type { ReactElement } from "react";
 import { Marker } from "react-map-gl/maplibre";
-import type { MapMarker } from "../../types/report";
+import type { MarkerGroup } from "../../types/report";
 
-interface MarkerGroup {
-  key: string;
-  longitude: number;
-  latitude: number;
-  markers: MapMarker[];
-}
 
 interface ReportMarkerProps {
   group: MarkerGroup;
   onSelect: (group: MarkerGroup) => void;
 }
 
+
 export const ReportMarker = ({
   group,
   onSelect,
 }: ReportMarkerProps): ReactElement => {
-  const hasLost = group.markers.some(
-    (marker) => marker.kind === "lost",
+
+
+  const hasLost = group.items.some(
+    (item) =>
+      item.type === "report" &&
+      item.marker.kind === "lost",
   );
 
-  const color = hasLost
-    ? "bg-red-500"
-    : "bg-blue-500";
+
+  const hasOrganization = group.items.some(
+    (item) =>
+      item.type === "organization",
+  );
+
+
+  const color = hasOrganization
+    ? "bg-green-600"
+    : hasLost
+      ? "bg-red-500"
+      : "bg-blue-500";
+
+
+
+  const count = group.items.length;
+
 
 
   return (
@@ -36,18 +49,31 @@ export const ReportMarker = ({
         onSelect(group);
       }}
     >
-      <div className={` flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 border-white shadow-md ${color}`}>
 
-        {group.markers.length > 1 && (
+      <div
+        className={`
+          flex
+          h-7
+          w-7
+          cursor-pointer
+          items-center
+          justify-center
+          rounded-full
+          border-2
+          border-white
+          shadow-md
+          ${color}
+        `}
+      >
 
-          <span className=" text-[10px] font-bold text-white">
-              
-            {group.markers.length}
-
+        {count > 1 && (
+          <span className="text-[10px] font-bold text-white">
+            {count}
           </span>
         )}
-        
+
       </div>
+
     </Marker>
   );
 };
