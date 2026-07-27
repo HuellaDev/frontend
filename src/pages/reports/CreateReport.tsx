@@ -24,7 +24,7 @@ const MERIDA_FALLBACK: GeoLocation = {
   latitude: 20.9674,
 };
 
-const PHONE_REGEX = /^\+?[0-9\s\-()]{7,15}$/;
+import { isPhoneFilled, isValidPhone } from "@/components/report-form/PhoneField";
 
 export const CreateReport = (): ReactElement => {
   const navigate = useNavigate();
@@ -102,7 +102,7 @@ export const CreateReport = (): ReactElement => {
       return;
     }
 
-    if (kind === "lost" && contactPhone && !PHONE_REGEX.test(contactPhone)) {
+    if (kind === "lost" && isPhoneFilled(contactPhone) && !isValidPhone(contactPhone)) {
       setFormError("Contact phone format is invalid.");
       return;
     }
