@@ -20,6 +20,7 @@ import {
   ReportPopup,
 } from "@/components/map-page";
 import { SearchRadiusLayer } from "@/components/map-page/SearchRadiusLayer";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 
 import type { MapStyleKey } from "@/components/map-page";
@@ -55,6 +56,12 @@ const MAP_STYLES: Record<MapStyleKey, {label:string;url:string}> = {
 
 
 
+const shiftDate = (dateStr: string, days: number): string => {
+  const base = dateStr ? new Date(`${dateStr}T00:00:00`) : new Date();
+  base.setDate(base.getDate() + days);
+  return base.toISOString().slice(0, 10);
+};
+
 export const MapPage = (): ReactElement => {
 
 
@@ -72,6 +79,7 @@ export const MapPage = (): ReactElement => {
 
 
   const [zoom,setZoom] = useState(12);
+  const [asOfDate, setAsOfDate] = useState<string>("");
 
 
 
@@ -95,7 +103,7 @@ export const MapPage = (): ReactElement => {
     markerGroups,
     markers,
     isLoading,
-  } = useMapReports();
+  } = useMapReports(asOfDate ? new Date(asOfDate).toISOString() : undefined);
 
 
 
@@ -184,15 +192,59 @@ export const MapPage = (): ReactElement => {
 
 
 
-        <MapControls
-          styleKey={styleKey}
-          setStyleKey={setStyleKey}
-          mapStyles={MAP_STYLES}
-          is3D={is3D}
-          setIs3D={setIs3D}
-          isLocating={isLocating}
-          locate={locate}
-        />
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setAsOfDate((prev) => shiftDate(prev, -1))}
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-border hover:bg-muted"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+
+            <input
+              type="date"
+              value={asOfDate}
+              max={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setAsOfDate(e.target.value)}
+              className="h-7 rounded-full border border-border px-3 text-xs"
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setAsOfDate((prev) => {
+                  const next = shiftDate(prev, 1);
+                  const today = new Date().toISOString().slice(0, 10);
+                  return next >= today ? "" : next;
+                })
+              }
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-border hover:bg-muted"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {asOfDate && (
+            <button
+              type="button"
+              onClick={() => setAsOfDate("")}
+              className="text-xs text-muted-foreground underline"
+            >
+              Live
+            </button>
+          )}
+
+          <MapControls
+            styleKey={styleKey}
+            setStyleKey={setStyleKey}
+            mapStyles={MAP_STYLES}
+            is3D={is3D}
+            setIs3D={setIs3D}
+            isLocating={isLocating}
+            locate={locate}
+          />
+        </div>
 
 
       </div>

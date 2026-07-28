@@ -66,18 +66,18 @@ const groupItems = (
 
 
 
-export const useMapReports = () => {
+export const useMapReports = (asOf?: string) => {
 
 
   const lostReportsQuery = useQuery({
-    queryKey: ["lost-reports", "active"],
-    queryFn: fetchLostReports,
+    queryKey: ["lost-reports", asOf ?? "active"],
+    queryFn: () => fetchLostReports(asOf),
   });
 
 
   const sightingReportsQuery = useQuery({
-    queryKey: ["sighting-reports", "active"],
-    queryFn: fetchSightingReports,
+    queryKey: ["sighting-reports", asOf ?? "active"],
+    queryFn: () => fetchSightingReports(asOf),
   });
 
 

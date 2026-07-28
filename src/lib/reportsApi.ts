@@ -1,9 +1,9 @@
 import api from "./api";
 import type { LostReport, SightingReport } from "../types/report";
 
-export const fetchLostReports = async (): Promise<LostReport[]> => {
+export const fetchLostReports = async (asOf?: string): Promise<LostReport[]> => {
   const { data } = await api.get<LostReport[]>("/lost-reports", {
-    params: { status: "active" },
+    params: asOf ? { as_of: asOf } : { status: "active" },
   });
   return data;
 };
@@ -13,9 +13,9 @@ export const fetchMyLostReports = async (): Promise<LostReport[]> => {
   return data;
 };
 
-export const fetchSightingReports = async (): Promise<SightingReport[]> => {
+export const fetchSightingReports = async (asOf?: string): Promise<SightingReport[]> => {
   const { data } = await api.get<SightingReport[]>("/sighting-reports", {
-    params: { status: "active" },
+    params: asOf ? { as_of: asOf } : { status: "active" },
   });
   return data;
 };

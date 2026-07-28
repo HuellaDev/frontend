@@ -1,15 +1,16 @@
 import type { ReactElement } from "react";
 import { Source, Layer } from "react-map-gl/maplibre";
 import circle from "@turf/circle";
-import type { Feature, Polygon } from "geojson";
 import type { MapMarker, LostReport } from "../../types/report";
+
+type CircleFeature = ReturnType<typeof circle>;
 
 interface SearchRadiusLayerProps {
   markers: MapMarker[];
 }
 
 export const SearchRadiusLayer = ({ markers }: SearchRadiusLayerProps): ReactElement | null => {
-  const features: Feature<Polygon>[] = markers
+  const features: CircleFeature[] = markers
     .filter((m) => m.kind === "lost")
     .map((m) => {
       const report = m.report as LostReport;
@@ -20,7 +21,7 @@ export const SearchRadiusLayer = ({ markers }: SearchRadiusLayerProps): ReactEle
         units: "kilometers",
       });
     })
-    .filter((f): f is Feature<Polygon> => f !== null);
+    .filter((f): f is CircleFeature => f !== null);
 
   if (features.length === 0) return null;
 
