@@ -19,6 +19,7 @@ import {
   ReportMarker,
   ReportPopup,
 } from "@/components/map-page";
+import { SearchRadiusLayer } from "@/components/map-page/SearchRadiusLayer";
 
 
 import type { MapStyleKey } from "@/components/map-page";
@@ -228,6 +229,14 @@ export const MapPage = (): ReactElement => {
             height:"100%",
           }}
         >
+
+
+          {
+            showMarkers &&
+            <SearchRadiusLayer markers={markers} />
+          }
+
+
 
 
           {
