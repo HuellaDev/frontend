@@ -220,3 +220,8 @@
     }
 
 }
+
+@keyframes settings-flash {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: color-mix(in srgb, var(--primary) 15%, transparent); }
+}
