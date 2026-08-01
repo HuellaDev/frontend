@@ -25,13 +25,17 @@ export const useTheme = () => {
   const [isDark, setIsDark] = useState<boolean>(getStoredIsDark);
 
   useEffect(() => {
+    applyIsDark(isDark);
+  }, [isDark]);
+
+  useEffect(() => {
     const handleChange = (): void => setIsDark(getStoredIsDark());
     window.addEventListener(THEME_EVENT, handleChange);
     return () => window.removeEventListener(THEME_EVENT, handleChange);
   }, []);
 
   const toggleTheme = useCallback((): void => {
-    applyIsDark(!getStoredIsDark());
+    setIsDark((prev) => !prev);
   }, []);
 
   return { isDark, toggleTheme };

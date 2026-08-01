@@ -225,3 +225,8 @@
   0%, 100% { background-color: transparent; }
   50% { background-color: color-mix(in srgb, var(--primary) 15%, transparent); }
 }
+
+.maplibregl-popup-content {
+  background-color: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+}
