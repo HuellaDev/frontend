@@ -5,9 +5,9 @@ export { ProfileSection } from "./ProfileSection";
 export { AccountSection } from "./AccountSection";
 export { PasswordSection } from "./PasswordSection";
 export { AppearanceSection } from "./AppearanceSection";
+export { NotificationsSection } from "./NotificationsSection";
 export {
   ProfilePrivacySection,
-  NotificationsSection,
   AccessibilitySection,
   ReportPreferencesSection,
   DataStorageSection,

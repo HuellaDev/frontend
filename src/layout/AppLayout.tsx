@@ -7,6 +7,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { fetchMyProfile } from "../lib/profileApi";
 import supabase from "../lib/supabaseClient";
+import { NotificationBell } from "../components/layout/NotificationBell";
 
 import {
   DropdownMenu,
@@ -60,6 +61,8 @@ export const AppLayout = (): ReactElement => {
                 <Link to="/reports/new" className={linkStyle}>
                   New Report
                 </Link>
+
+                <NotificationBell />
 
                 <DropdownMenu>
                   <DropdownMenuTrigger

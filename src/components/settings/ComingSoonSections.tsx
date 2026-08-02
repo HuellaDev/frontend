@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { Bell, Database, Eye, FileText, Info, Mail, Palette, ShieldCheck } from "lucide-react";
+import { Bell, Database, Eye, FileText, Info, Palette, ShieldCheck } from "lucide-react";
 import { PendingRow } from "./PendingRow";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION ?? "0.0.0";
@@ -8,13 +8,6 @@ export const ProfilePrivacySection = (): ReactElement => (
   <div className="space-y-1">
     <PendingRow icon={Eye} title="Profile visibility" description="Control who can see your profile details." />
     <PendingRow icon={ShieldCheck} title="Contact privacy" description="Choose how contact details appear on reports." />
-  </div>
-);
-
-export const NotificationsSection = (): ReactElement => (
-  <div className="space-y-1">
-    <PendingRow icon={Bell} title="Report updates" description="Updates about reports you created or follow." />
-    <PendingRow icon={Mail} title="Email notifications" description="Choose which updates you receive by email." />
   </div>
 );
 
