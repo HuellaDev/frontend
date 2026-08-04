@@ -43,8 +43,16 @@ export const AppLayout = (): ReactElement => {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="border-b border-border bg-background">
         <nav className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-4">
-          <Link to="/" className="font-semibold">
-            Huella
+          <Link to="/" className="flex items-center gap-2 font-semibold"
+          >
+            <img
+              src="/huella-icon.svg"
+              alt="Huella"
+              className="w-8 h-8"
+            />
+            <h2 className="text-xl font-bold">
+              Huella
+            </h2>
           </Link>
 
           <div className="ml-auto flex items-center gap-6 text-sm">
@@ -112,16 +120,14 @@ export const AppLayout = (): ReactElement => {
                         <span className="text-xs text-muted-foreground">{isDark ? "Dark" : "Light"}</span>
                       </span>
                       <span
-                        className={`relative flex h-8 w-16 shrink-0 items-center rounded-full p-1 transition-colors duration-300 ${
-                          isDark ? "bg-primary" : "bg-muted"
-                        }`}
+                        className={`relative flex h-8 w-16 shrink-0 items-center rounded-full p-1 transition-colors duration-300 ${isDark ? "bg-primary" : "bg-muted"
+                          }`}
                       >
                         <Sun className={`absolute left-2 size-3.5 transition-opacity duration-200 ${isDark ? "opacity-50" : "opacity-100"}`} />
                         <Moon className={`absolute right-2 size-3.5 transition-opacity duration-200 ${isDark ? "opacity-100" : "opacity-50"}`} />
                         <span
-                          className={`relative z-10 size-6 rounded-full bg-background shadow-sm transition-transform duration-300 ease-out ${
-                            isDark ? "translate-x-8" : "translate-x-0"
-                          }`}
+                          className={`relative z-10 size-6 rounded-full bg-background shadow-sm transition-transform duration-300 ease-out ${isDark ? "translate-x-8" : "translate-x-0"
+                            }`}
                         />
                       </span>
                     </button>

@@ -16,8 +16,8 @@ self.addEventListener("push", (event) => {
 
   const options: ExtendedNotificationOptions = {
     body: data.message,
-    icon: "/icondos.jpg",
-    badge: "/icondos.jpg",
+    icon: "/huella-icon-192.png",
+    badge: "/huella-icon-192.png",
     tag: data.type ?? "huella-notification",
     renotify: true,
     vibrate: [100, 50, 100],

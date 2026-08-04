@@ -14,18 +14,28 @@ export default defineConfig({
     filename: "sw.ts",
 
     devOptions: {
-    enabled: true,
-    type: "module",
-  },
+      enabled: true,
+      type: "module",
+    },
 
     registerType: "autoUpdate",
     manifest: {
       name: "Huella",
       short_name: "Huella",
       theme_color: "#0f172a",
+      background_color: "#ffffff",
+      display: "standalone",
       icons: [
-        { src: "/iconuno.jpg", sizes: "192x192", type: "image/jpg" },
-        { src: "/icondos.jpg", sizes: "512x512", type: "image/jpg" },
+        {
+          src: "/huella-icon-192.png",
+          sizes: "192x192",
+          type: "image/png",
+        },
+        {
+          src: "/huella-icon-512.png",
+          sizes: "512x512",
+          type: "image/png",
+        },
       ],
     },
   }),
