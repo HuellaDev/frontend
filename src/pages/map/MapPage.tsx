@@ -103,7 +103,7 @@ export const MapPage = (): ReactElement => {
     markerGroups,
     markers,
     isLoading,
-  } = useMapReports(asOfDate ? new Date(asOfDate).toISOString() : undefined);
+  } = useMapReports(asOfDate ? new Date(`${asOfDate}T23:59:59.999`).toISOString() : undefined );
 
 
 
@@ -156,8 +156,7 @@ export const MapPage = (): ReactElement => {
 
 
 
-  const showMarkers =
-    zoom >= MIN_ZOOM_FOR_MARKERS;
+  const showMarkers =  zoom >= MIN_ZOOM_FOR_MARKERS;
 
 
 
