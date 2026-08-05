@@ -9,6 +9,9 @@ import { ReportDetail } from "../pages/reports/ReportDetail";
 import { MyReports } from "../pages/reports/MyReports";
 import { Settings } from "../pages/profile/Settings";
 
+import { PrivacyPolicy } from "../pages/legal/PrivacyPolicy";
+import { TermsOfService } from "../pages/legal/TermsOfService";
+
 export const appRouter = createBrowserRouter([
   {
     path: "/",
@@ -42,6 +45,9 @@ export const appRouter = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+
+      { path: "privacy", element: <PrivacyPolicy /> },
+      { path: "terms", element: <TermsOfService /> },
     ],
   },
 ]);

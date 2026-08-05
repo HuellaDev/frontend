@@ -20,7 +20,7 @@ export const Register = (): ReactElement => {
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
+    const [agreedToPolicy, setAgreedToPolicy] = useState(false);
 
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +33,11 @@ export const Register = (): ReactElement => {
 
         setError(null);
         setIsLoading(true);
+
+        if (!agreedToPolicy) {
+            setError("You must accept the Privacy Policy and Terms to create an account.");
+            return;
+        }
 
         const { data, error: signUpError } =
             await supabase.auth.signUp({
@@ -178,6 +183,37 @@ export const Register = (): ReactElement => {
                     </Alert>
 
                 )}
+
+                <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                    We collect your name, phone, photos, and location to publish lost/found pet
+                    reports. Contact info you add to a report is shown publicly so others can
+                    reach you. See our{" "}
+                    <Link to="/privacy" target="_blank" className="font-medium text-primary hover:underline">
+                        Privacy Policy
+                    </Link>{" "}
+                    for details on how your data is stored and used.
+                </div>
+
+                <label className="flex items-start gap-2 text-sm">
+                    <input
+                        type="checkbox"
+                        checked={agreedToPolicy}
+                        onChange={(e) => setAgreedToPolicy(e.target.checked)}
+                        className="mt-0.5"
+                        required
+                    />
+                    <span>
+                        I have read and agree to the{" "}
+                        <Link to="/privacy" target="_blank" className="font-medium text-primary hover:underline">
+                            Privacy Policy
+                        </Link>{" "}
+                        and{" "}
+                        <Link to="/terms" target="_blank" className="font-medium text-primary hover:underline">
+                            Terms of Service
+                        </Link>
+                        .
+                    </span>
+                </label>
 
                 <Button type="submit" disabled={isLoading}>
 
