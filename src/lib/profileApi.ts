@@ -14,6 +14,15 @@ export const fetchMyProfile = async (): Promise<MyProfile> => {
   return data.profile;
 };
 
+
+export const createMyProfile = async (payload: {
+  full_name: string;
+}) => {
+  const { data } = await api.post("/profile", payload);
+  return data;
+};
+
+
 export const updateMyProfile = async (payload: {
   full_name?: string;
   phone?: string;
@@ -22,9 +31,16 @@ export const updateMyProfile = async (payload: {
   return data;
 };
 
+
 export const uploadMyProfilePhoto = async (file: File): Promise<MyProfile> => {
   const formData = new FormData();
+
   formData.append("file", file);
-  const { data } = await api.post<MyProfile>("/profile/me/photo", formData);
+
+  const { data } = await api.post<MyProfile>(
+    "/profile/me/photo",
+    formData
+  );
+
   return data;
 };

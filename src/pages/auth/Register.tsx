@@ -28,7 +28,6 @@ export const Register = (): ReactElement => {
 
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-
         e.preventDefault();
 
         setError(null);
@@ -36,6 +35,7 @@ export const Register = (): ReactElement => {
 
         if (!agreedToPolicy) {
             setError("You must accept the Privacy Policy and Terms to create an account.");
+            setIsLoading(false);
             return;
         }
 
@@ -43,18 +43,21 @@ export const Register = (): ReactElement => {
             await supabase.auth.signUp({
                 email,
                 password,
+                options: {
+                    data: {
+                        full_name: fullName,
+                    },
+                },
             });
 
         if (signUpError) {
-
             setIsLoading(false);
             setError(signUpError.message);
             return;
-
         }
 
-        if (!data.session) {
 
+        if (!data.session) {
             setIsLoading(false);
 
             setError(
@@ -62,18 +65,15 @@ export const Register = (): ReactElement => {
             );
 
             return;
-
         }
 
-        try {
 
+        try {
             await api.post("/profile", {
                 full_name: fullName,
             });
 
-
         } catch {
-
             setIsLoading(false);
 
             setError(
@@ -81,13 +81,11 @@ export const Register = (): ReactElement => {
             );
 
             return;
-
         }
 
+
         setIsLoading(false);
-
         navigate("/");
-
     };
 
 

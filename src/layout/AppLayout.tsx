@@ -29,6 +29,7 @@ export const AppLayout = (): ReactElement => {
     queryKey: ["my-profile"],
     queryFn: fetchMyProfile,
     enabled: Boolean(session),
+    retry: false,
   });
 
   const handleLogout = async (): Promise<void> => {
