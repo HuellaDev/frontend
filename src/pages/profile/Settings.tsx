@@ -13,6 +13,7 @@ import {
   // ProfilePrivacySection,
   NotificationsSection,
   AboutSection,
+  BecomeHelpCenterSection,
   // AccessibilitySection,
   // ReportPreferencesSection,
   // DataStorageSection,
@@ -100,7 +101,9 @@ export const Settings = (): ReactElement => {
 
     return (
       <>
-
+        <SettingsBlock id="become-help-center" title="Become a Help Center" isFlashed={flashedId === "become-help-center"}>
+          <BecomeHelpCenterSection/>
+        </SettingsBlock>
 
 
       </>
