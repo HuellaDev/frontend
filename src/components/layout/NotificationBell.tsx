@@ -1,8 +1,10 @@
 import type { ReactElement } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
 
 import { fetchMyNotifications, markNotificationAsRead } from "../../lib/notificationsApi";
+import type { AppNotification } from "../../types/notification";
 
 import {
   DropdownMenu,
@@ -23,6 +25,7 @@ const formatRelativeTime = (dateStr: string): string => {
 };
 
 export const NotificationBell = (): ReactElement => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const notificationsQuery = useQuery({
@@ -40,6 +43,16 @@ export const NotificationBell = (): ReactElement => {
 
   const notifications = notificationsQuery.data ?? [];
   const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+  const handleClick = (notification: AppNotification): void => {
+    if (!notification.is_read) {
+      markReadMutation.mutate(notification.id);
+    }
+
+    if (notification.link_url) {
+      navigate(notification.link_url);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -67,7 +80,7 @@ export const NotificationBell = (): ReactElement => {
             <button
               key={notification.id}
               type="button"
-              onClick={() => !notification.is_read && markReadMutation.mutate(notification.id)}
+              onClick={() => handleClick(notification)}
               className={`flex w-full flex-col gap-0.5 rounded-xl px-3 py-2 text-left transition-colors hover:bg-muted ${
                 notification.is_read ? "" : "bg-primary/5"
               }`}
