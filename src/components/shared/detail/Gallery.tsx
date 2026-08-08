@@ -1,19 +1,28 @@
 import { useState, type ReactElement } from "react";
 import { Icon } from "@iconify/react";
-import type { Photo } from "../../types/report";
+import type { Photo } from "@/types/report";
 
-interface ReportGalleryProps {
+interface GalleryProps {
   photos: Photo[];
+  alt?: string;
+  emptyIcon?: string;
+  emptyLabel?: string;
 }
 
-export const ReportGallery = ({ photos }: ReportGalleryProps): ReactElement => {
+export const Gallery = ({
+  photos,
+  alt = "",
+  emptyIcon = "mdi:image-off",
+  emptyLabel,
+}: GalleryProps): ReactElement => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
 
   if (photos.length === 0) {
     return (
-      <div className="flex h-64 w-full items-center justify-center rounded-xl border border-border bg-muted">
-        <Icon icon="mdi:paw" className="h-16 w-16 text-muted-foreground" />
+      <div className="flex h-64 w-full flex-col items-center justify-center gap-2 rounded-xl border border-border bg-muted">
+        <Icon icon={emptyIcon} className="h-16 w-16 text-muted-foreground" />
+        {emptyLabel && <p className="text-sm text-muted-foreground">{emptyLabel}</p>}
       </div>
     );
   }
@@ -23,7 +32,7 @@ export const ReportGallery = ({ photos }: ReportGalleryProps): ReactElement => {
       <div className="relative">
         <img
           src={photos[activeIndex].url}
-          alt="Report"
+          alt={alt}
           className="aspect-video w-full rounded-xl border border-border object-cover"
         />
 
@@ -43,14 +52,16 @@ export const ReportGallery = ({ photos }: ReportGalleryProps): ReactElement => {
               key={photo.id}
               type="button"
               onClick={() => setActiveIndex(index)}
-              className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 ${index === activeIndex ? "border-primary" : "border-transparent"
-                }`}
+              className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 ${
+                index === activeIndex ? "border-primary" : "border-transparent"
+              }`}
             >
               <img src={photo.url} alt="" className="h-full w-full object-cover" />
             </button>
           ))}
         </div>
       )}
+
       {isOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
@@ -58,7 +69,7 @@ export const ReportGallery = ({ photos }: ReportGalleryProps): ReactElement => {
         >
           <img
             src={photos[activeIndex].url}
-            alt="Report"
+            alt={alt}
             className="max-h-[90vh] max-w-full rounded-xl object-contain"
           />
         </div>
