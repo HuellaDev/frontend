@@ -66,7 +66,7 @@ const groupItems = (
 
 
 
-export const useMapReports = (asOf?: string) => {
+export const useMapMarkers = (asOf?: string) => {
 
 
   const lostReportsQuery = useQuery({

@@ -6,27 +6,29 @@ import { Icon } from "@iconify/react";
 
 import type { MarkerGroup } from "../../types/report";
 
-interface ReportPopupProps {
+interface MapPopupProps {
   group: MarkerGroup;
   onClose: () => void;
 }
 
-export const ReportPopup = ({ group, onClose }: ReportPopupProps): ReactElement => {
+export const MapPopup = ({
+  group,
+  onClose,
+}: MapPopupProps): ReactElement => {
   return (
     <Popup
       longitude={group.longitude}
       latitude={group.latitude}
       onClose={onClose}
       closeButton={false}
-      closeOnClick={false}
       anchor="bottom"
-      maxWidth="320px"
     >
-      <div className="relative rounded-xl p-1">
+      <div className="relative">
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-background shadow-md ring-1 ring-border transition hover:bg-red-50 hover:text-red-500 active:scale-95"
+          className="absolute right-1 top-1 z-10 rounded-full p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          aria-label="Close"
         >
           <X className="h-4 w-4" />
         </button>
@@ -42,65 +44,60 @@ export const ReportPopup = ({ group, onClose }: ReportPopupProps): ReactElement 
                   to={`/help-centers/${organization.id}`}
                   className="flex gap-3 rounded-xl border border-green-200 border-l-4 border-l-green-600 bg-card p-2 text-sm text-card-foreground transition hover:bg-muted/50"
                 >
-
                   {organization.Photos?.[0] ? (
-
                     <img
                       src={organization.Photos[0].url}
                       alt={organization.name}
                       className="h-16 w-16 shrink-0 rounded-lg object-cover"
                     />
-
                   ) : (
-
                     <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-green-100 dark:bg-green-950">
-
                       <Icon
                         icon="mdi:hospital-box"
                         className="h-8 w-8 text-green-600"
                       />
-
                     </div>
-
                   )}
 
-
-
                   <div className="flex flex-col justify-center">
-
                     <span className="w-fit rounded-full bg-green-600 px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
                       Help Center
                     </span>
-
 
                     <p className="mt-1 font-semibold">
                       {organization.name}
                     </p>
 
-
                     <p className="text-muted-foreground">
                       {organization.type}
                     </p>
-
-
                   </div>
-
-
                 </Link>
               );
             }
 
             const marker = item.marker;
-            const photo = marker.report.Photos?.find((photo) => photo.is_primary) ?? marker.report.Photos?.[0];
+
+            const photo =
+              marker.report.Photos?.find(
+                (photo) => photo.is_primary,
+              ) ?? marker.report.Photos?.[0];
+
             const isLost = marker.kind === "lost";
-            const petName = isLost ? (marker.report as { pet_name: string | null }).pet_name : null;
+
+            const petName = isLost
+              ? (marker.report as { pet_name: string | null }).pet_name
+              : null;
 
             return (
               <Link
                 key={marker.id}
                 to={`/reports/${marker.id}`}
-                className={`flex gap-3 rounded-xl border border-border border-l-4 bg-card p-2 text-sm text-card-foreground transition hover:bg-muted/50 ${isLost ? "border-l-red-500" : "border-l-blue-500"
-                  }`}
+                className={`flex gap-3 rounded-xl border border-border border-l-4 bg-card p-2 text-sm text-card-foreground transition hover:bg-muted/50 ${
+                  isLost
+                    ? "border-l-red-500"
+                    : "border-l-blue-500"
+                }`}
               >
                 {photo ? (
                   <img
@@ -109,23 +106,31 @@ export const ReportPopup = ({ group, onClose }: ReportPopupProps): ReactElement 
                     className="h-16 w-16 shrink-0 rounded-lg object-cover"
                   />
                 ) : (
-                  <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-muted">
-                    <Icon icon="mdi:paw" className="h-8 w-8 text-muted-foreground" />
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-muted">
+                    <Icon
+                      icon="mdi:paw"
+                      className="h-8 w-8 text-muted-foreground"
+                    />
                   </div>
                 )}
 
                 <div className="flex flex-col justify-center">
                   <span
-                    className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase text-white ${isLost ? "bg-red-500" : "bg-blue-500"
-                      }`}
+                    className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase text-white ${
+                      isLost ? "bg-red-500" : "bg-blue-500"
+                    }`}
                   >
                     {isLost ? "Lost" : "Sighted"}
                   </span>
 
-                  <p className="mt-1 font-semibold">{petName || marker.report.AnimalProfile.species}</p>
+                  <p className="mt-1 font-semibold">
+                    {petName ||
+                      marker.report.AnimalProfile.species}
+                  </p>
 
                   <p className="text-muted-foreground">
-                    {marker.report.AnimalProfile.breed && `${marker.report.AnimalProfile.breed} · `}
+                    {marker.report.AnimalProfile.breed &&
+                      `${marker.report.AnimalProfile.breed} · `}
                     {marker.report.AnimalProfile.main_color}
                   </p>
                 </div>
