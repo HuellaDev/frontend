@@ -1,13 +1,22 @@
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { fetchOrganizationById } from "@/lib/organizationsApi";
+import {
+  fetchOrganizationById,
+  uploadOrganizationPhotos,
+  deleteOrganizationPhoto,
+} from "@/lib/organizationsApi";
+import { useAuth } from "@/hooks/useAuth";
 import { Gallery } from "@/components/shared/detail";
 import { HelpCenterInfo } from "@/components/help-center";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const HelpCenterDetail = (): ReactElement => {
   const { id } = useParams<{ id: string }>();
+  const { session } = useAuth();
+  const queryClient = useQueryClient();
+  const [galleryError, setGalleryError] = useState<string | null>(null);
 
   const {
     data: organization,
@@ -17,6 +26,33 @@ export const HelpCenterDetail = (): ReactElement => {
     queryKey: ["helpCenter", id],
     queryFn: () => fetchOrganizationById(id!),
     enabled: Boolean(id),
+  });
+
+  const isOwner = Boolean(
+    session?.user.id && organization?.user_id === session.user.id,
+  );
+
+  const addPhotosMutation = useMutation({
+    mutationFn: (files: File[]) => uploadOrganizationPhotos(files, id!),
+    onSuccess: (results) => {
+      const failed = results.filter((r) => r.status === "rejected");
+      setGalleryError(
+        failed.length > 0
+          ? `${failed.length} of ${results.length} photo(s) failed to upload.`
+          : null,
+      );
+      queryClient.invalidateQueries({ queryKey: ["helpCenter", id] });
+    },
+  });
+
+  const deletePhotoMutation = useMutation({
+    mutationFn: (photoId: string) => deleteOrganizationPhoto(photoId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["helpCenter", id] });
+    },
+    onError: () => {
+      setGalleryError("Could not delete photo. Please try again.");
+    },
   });
 
   if (isLoading) {
@@ -30,12 +66,23 @@ export const HelpCenterDetail = (): ReactElement => {
   return (
     <div className="container max-w-5xl py-8">
       <div className="mx-auto w-full max-w-4xl space-y-6 rounded-xl border border-border bg-background p-6 pb-10">
+        {galleryError && (
+          <Alert variant="destructive">
+            <AlertDescription>{galleryError}</AlertDescription>
+          </Alert>
+        )}
+
         <Gallery
           photos={organization.Photos}
           alt={organization.name}
           emptyIcon="mdi:domain"
           emptyLabel="No photos yet"
+          editable={isOwner}
+          isUploading={addPhotosMutation.isPending}
+          onAddPhotos={(files) => addPhotosMutation.mutate(files)}
+          onDeletePhoto={(photoId) => deletePhotoMutation.mutate(photoId)}
         />
+
         <HelpCenterInfo organization={organization} />
       </div>
     </div>

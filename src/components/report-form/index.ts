@@ -8,4 +8,7 @@ export { LostInformation } from "./LostInformation";
 
 export { PhotoUploader } from "./PhotoUploader";
 
+export { MultiPhotoUploader } from "./MultiPhotoUploader";
+
 export { LocationSection } from "./LocationSection";
+
