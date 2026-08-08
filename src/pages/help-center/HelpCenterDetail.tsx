@@ -8,6 +8,7 @@ import {
   deleteOrganizationPhoto,
 } from "@/lib/organizationsApi";
 import { useAuth } from "@/hooks/useAuth";
+import { getErrorMessage } from "@/lib/errors";
 import { Gallery } from "@/components/shared/detail";
 import { HelpCenterInfo } from "@/components/help-center";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -32,26 +33,33 @@ export const HelpCenterDetail = (): ReactElement => {
     session?.user.id && organization?.user_id === session.user.id,
   );
 
+  const invalidateOrganization = (): void => {
+    queryClient.invalidateQueries({ queryKey: ["helpCenter", id] });
+  };
+
   const addPhotosMutation = useMutation({
     mutationFn: (files: File[]) => uploadOrganizationPhotos(files, id!),
     onSuccess: (results) => {
       const failed = results.filter((r) => r.status === "rejected");
+
       setGalleryError(
         failed.length > 0
           ? `${failed.length} of ${results.length} photo(s) failed to upload.`
           : null,
       );
-      queryClient.invalidateQueries({ queryKey: ["helpCenter", id] });
+
+      invalidateOrganization();
     },
   });
 
   const deletePhotoMutation = useMutation({
     mutationFn: (photoId: string) => deleteOrganizationPhoto(photoId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["helpCenter", id] });
+      setGalleryError(null);
+      invalidateOrganization();
     },
-    onError: () => {
-      setGalleryError("Could not delete photo. Please try again.");
+    onError: (error) => {
+      setGalleryError(getErrorMessage(error, "Could not delete photo."));
     },
   });
 

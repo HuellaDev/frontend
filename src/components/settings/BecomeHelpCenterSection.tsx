@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { createOrganization, uploadOrganizationPhotos } from "../../lib/organizationsApi";
 import { useGeolocation, type GeoLocation } from "../../hooks/useGeolocation";
+import { getErrorMessage } from "@/lib/errors";
 
 import { MultiPhotoUploader, LocationSection } from "@/components/report-form";
 
@@ -12,11 +13,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import type { Organization } from "@/types/organization";
 
 const MERIDA_FALLBACK: GeoLocation = {
   longitude: -89.6237,
   latitude: 20.9674,
 };
+
+interface CreateResult {
+  organization: Organization;
+  failedPhotoCount: number;
+  totalPhotoCount: number;
+}
 
 export const BecomeHelpCenterSection = (): ReactElement => {
   const navigate = useNavigate();
@@ -36,9 +44,7 @@ export const BecomeHelpCenterSection = (): ReactElement => {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
-
   const [photos, setPhotos] = useState<File[]>([]);
-  const [photoWarning, setPhotoWarning] = useState<string | null>(null);
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -46,11 +52,7 @@ export const BecomeHelpCenterSection = (): ReactElement => {
   const finalLocation = pinLocation ?? gpsLocation;
 
   const mutation = useMutation({
-    mutationFn: async () => {
-      if (!finalLocation) {
-        throw new Error("Location is required");
-      }
-
+    mutationFn: async (): Promise<CreateResult> => {
       const payload = {
         name,
         type,
@@ -59,68 +61,54 @@ export const BecomeHelpCenterSection = (): ReactElement => {
         description: description || undefined,
         location: {
           type: "Point" as const,
-          coordinates: [finalLocation.longitude, finalLocation.latitude] as [number, number],
+          coordinates: [finalLocation!.longitude, finalLocation!.latitude] as [number, number],
         },
       };
 
       const organization = await createOrganization(payload);
 
-      if (photos.length > 0) {
-        const results = await uploadOrganizationPhotos(photos, organization.id);
-        const failed = results.filter((r) => r.status === "rejected");
-
-        if (failed.length > 0) {
-          setPhotoWarning(
-            `Organization created, but ${failed.length} of ${photos.length} photo(s) failed to upload. You can add them later from your organization page.`,
-          );
-        }
+      if (photos.length === 0) {
+        return { organization, failedPhotoCount: 0, totalPhotoCount: 0 };
       }
 
-      return organization;
+      const results = await uploadOrganizationPhotos(photos, organization.id);
+      const failedPhotoCount = results.filter((r) => r.status === "rejected").length;
+
+      return { organization, failedPhotoCount, totalPhotoCount: photos.length };
     },
 
-    onSuccess: () => {
+    onSuccess: ({ failedPhotoCount }) => {
       queryClient.invalidateQueries({ queryKey: ["organizations"] });
-      navigate("/");
+
+      if (failedPhotoCount === 0) {
+        navigate("/");
+      }
     },
   });
 
+  const validate = (): string | null => {
+    if (!name.trim()) return "Organization name is required.";
+    if (!type) return "Organization type is required.";
+    if (!phone.trim()) return "Phone is required.";
+    if (!address.trim()) return "Address is required.";
+    if (photos.length === 0) return "At least one exterior photo is required.";
+    if (!finalLocation) return 'Please set a location using "Use my location".';
+    return null;
+  };
+
   const handleSubmit = (e: FormEvent): void => {
     e.preventDefault();
-    setFormError(null);
 
-    if (!name.trim()) {
-      setFormError("Organization name is required.");
-      return;
-    }
+    const validationError = validate();
+    setFormError(validationError);
 
-    if (!type) {
-      setFormError("Organization type is required.");
-      return;
-    }
-
-    if (!phone.trim()) {
-      setFormError("Phone is required.");
-      return;
-    }
-
-    if (!address.trim()) {
-      setFormError("Address is required.");
-      return;
-    }
-
-    if (photos.length === 0) {
-      setFormError("At least one exterior photo is required.");
-      return;
-    }
-
-    if (!finalLocation) {
-      setFormError('Please set a location using "Use my location".');
-      return;
-    }
+    if (validationError) return;
 
     mutation.mutate();
   };
+
+  const succeededWithPhotoFailures =
+    mutation.isSuccess && mutation.data.failedPhotoCount > 0;
 
   return (
     <div className="space-y-6">
@@ -191,12 +179,6 @@ export const BecomeHelpCenterSection = (): ReactElement => {
 
         <MultiPhotoUploader photos={photos} setPhotos={setPhotos} required />
 
-        {photoWarning && (
-          <Alert>
-            <AlertDescription>{photoWarning}</AlertDescription>
-          </Alert>
-        )}
-
         <LocationSection
           mapCenter={mapCenter}
           pinLocation={pinLocation}
@@ -215,13 +197,29 @@ export const BecomeHelpCenterSection = (): ReactElement => {
 
         {mutation.isError && (
           <Alert variant="destructive">
-            <AlertDescription>Something went wrong. Please try again.</AlertDescription>
+            <AlertDescription>{getErrorMessage(mutation.error)}</AlertDescription>
           </Alert>
         )}
 
-        <Button type="submit" className="w-full" disabled={mutation.isPending}>
-          {mutation.isPending ? "Submitting..." : "Submit verification"}
-        </Button>
+        {succeededWithPhotoFailures && (
+          <Alert>
+            <AlertDescription>
+              Organization created, but {mutation.data.failedPhotoCount} of{" "}
+              {mutation.data.totalPhotoCount} photo(s) failed to upload. You can add them later
+              from your organization page.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {succeededWithPhotoFailures ? (
+          <Button type="button" className="w-full" onClick={() => navigate("/")}>
+            Continue
+          </Button>
+        ) : (
+          <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            {mutation.isPending ? "Submitting..." : "Submit verification"}
+          </Button>
+        )}
       </form>
     </div>
   );
