@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { Icon } from "@iconify/react";
-import type { LostReport, SightingReport } from "../../types/report";
+import type { LostReport, SightingReport } from "@/types/report";
+import { InfoField, StatusBadge, ContactRow, AttributionRow } from "@/components/shared/detail";
 
 interface ReportInfoProps {
   kind: "lost" | "sighting";
@@ -14,16 +15,10 @@ export const ReportInfo = ({ kind, report }: ReportInfoProps): ReactElement => {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-semibold uppercase text-white ${
-            isLost ? "bg-red-500" : "bg-blue-500"
-          }`}
-        >
-          {isLost ? "Lost" : "Sighted"}
-        </span>
-        <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium capitalize">
-          {report.status}
-        </span>
+        <StatusBadge color={isLost ? "red" : "blue"}>{isLost ? "Lost" : "Sighted"}</StatusBadge>
+        <StatusBadge color="muted">
+          <span className="capitalize">{report.status}</span>
+        </StatusBadge>
       </div>
 
       <h1 className="text-2xl font-semibold">
@@ -44,39 +39,18 @@ export const ReportInfo = ({ kind, report }: ReportInfoProps): ReactElement => {
       {isLost && lostReport && (
         <div className="space-y-2 rounded-xl border border-border p-4 text-sm">
           {lostReport.contact_phone && (
-            <div className="flex items-center gap-2">
-              <Icon icon="mdi:phone" className="h-4 w-4 text-muted-foreground" />
-              <span>{lostReport.contact_phone}</span>
-            </div>
+            <ContactRow icon={<Icon icon="mdi:phone" className="h-4 w-4" />} value={lostReport.contact_phone} />
           )}
           {lostReport.reward_amount && Number(lostReport.reward_amount) > 0 && (
-            <div className="flex items-center gap-2">
-              <Icon icon="mdi:cash" className="h-4 w-4 text-muted-foreground" />
-              <span>${lostReport.reward_amount} reward</span>
-            </div>
+            <ContactRow
+              icon={<Icon icon="mdi:cash" className="h-4 w-4" />}
+              value={`$${lostReport.reward_amount} reward`}
+            />
           )}
         </div>
       )}
 
-      <div className="flex items-center gap-2 border-t border-border pt-4 text-sm text-muted-foreground">
-        {report.user.profile_photo ? (
-          <img src={report.user.profile_photo} alt="" className="h-8 w-8 rounded-full object-cover" />
-        ) : (
-          <Icon icon="mdi:account-circle" className="h-8 w-8" />
-        )}
-        <span>Reported by {report.user.full_name}</span>
-      </div>
-    </div>
-  );
-};
-
-const InfoField = ({ label, value }: { label: string; value: string | null }): ReactElement | null => {
-  if (!value) return null;
-
-  return (
-    <div>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="font-medium capitalize">{value}</p>
+      <AttributionRow label="Reported by" name={report.user.full_name} photoUrl={report.user.profile_photo} />
     </div>
   );
 };

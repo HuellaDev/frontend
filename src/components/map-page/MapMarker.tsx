@@ -3,16 +3,16 @@ import { Marker } from "react-map-gl/maplibre";
 import type { MarkerGroup } from "../../types/report";
 
 
-interface ReportMarkerProps {
+interface MapMarkerProps {
   group: MarkerGroup;
   onSelect: (group: MarkerGroup) => void;
 }
 
 
-export const ReportMarker = ({
+export const MapMarker = ({
   group,
   onSelect,
-}: ReportMarkerProps): ReactElement => {
+}: MapMarkerProps): ReactElement => {
 
 
   const hasLost = group.items.some(
