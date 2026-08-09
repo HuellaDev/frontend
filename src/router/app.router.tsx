@@ -8,6 +8,7 @@ import { CreateReport } from "../pages/reports/CreateReport";
 import { ReportDetail } from "../pages/reports/ReportDetail";
 import { MyReports } from "../pages/reports/MyReports";
 import { Settings } from "../pages/profile/Settings";
+import { HelpCenterDetail } from "../pages/help-center/HelpCenterDetail";
 
 import { PrivacyPolicy } from "../pages/legal/PrivacyPolicy";
 import { TermsOfService } from "../pages/legal/TermsOfService";
@@ -17,10 +18,26 @@ export const appRouter = createBrowserRouter([
     path: "/",
     element: <AppLayout />,
     children: [
-      { index: true, element: <MapPage /> },
-      { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
-      { path: "reports/:id", element: <ReportDetail /> },
+      {
+        index: true,
+        element: <MapPage />,
+      },
+
+      {
+        path: "login",
+        element: <Login />,
+      },
+
+      {
+        path: "register",
+        element: <Register />,
+      },
+
+      {
+        path: "reports/:id",
+        element: <ReportDetail />,
+      },
+
       {
         path: "reports/new",
         element: (
@@ -29,6 +46,7 @@ export const appRouter = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+
       {
         path: "reports/mine",
         element: (
@@ -37,6 +55,7 @@ export const appRouter = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+
       {
         path: "settings",
         element: (
@@ -46,8 +65,20 @@ export const appRouter = createBrowserRouter([
         ),
       },
 
-      { path: "privacy", element: <PrivacyPolicy /> },
-      { path: "terms", element: <TermsOfService /> },
+      {
+        path: "help-centers/:id",
+        element: <HelpCenterDetail />,
+      },
+
+      {
+        path: "privacy",
+        element: <PrivacyPolicy />,
+      },
+
+      {
+        path: "terms",
+        element: <TermsOfService />,
+      },
     ],
   },
 ]);

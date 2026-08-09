@@ -37,30 +37,56 @@ export const ReportPopup = ({ group, onClose }: ReportPopupProps): ReactElement 
               const organization = item.organization;
 
               return (
-                <div
+                <Link
                   key={organization.id}
-                  className="flex gap-3 rounded-xl border border-green-200 border-l-4 border-l-green-600 bg-card p-2 text-sm text-card-foreground"
+                  to={`/help-centers/${organization.id}`}
+                  className="flex gap-3 rounded-xl border border-green-200 border-l-4 border-l-green-600 bg-card p-2 text-sm text-card-foreground transition hover:bg-muted/50"
                 >
+
                   {organization.Photos?.[0] ? (
+
                     <img
                       src={organization.Photos[0].url}
                       alt={organization.name}
                       className="h-16 w-16 shrink-0 rounded-lg object-cover"
                     />
+
                   ) : (
+
                     <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-green-100 dark:bg-green-950">
-                      <Icon icon="mdi:hospital-box" className="h-8 w-8 text-green-600" />
+
+                      <Icon
+                        icon="mdi:hospital-box"
+                        className="h-8 w-8 text-green-600"
+                      />
+
                     </div>
+
                   )}
 
+
+
                   <div className="flex flex-col justify-center">
+
                     <span className="w-fit rounded-full bg-green-600 px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
                       Help Center
                     </span>
-                    <p className="mt-1 font-semibold">{organization.name}</p>
-                    <p className="text-muted-foreground">{organization.type}</p>
+
+
+                    <p className="mt-1 font-semibold">
+                      {organization.name}
+                    </p>
+
+
+                    <p className="text-muted-foreground">
+                      {organization.type}
+                    </p>
+
+
                   </div>
-                </div>
+
+
+                </Link>
               );
             }
 
@@ -73,9 +99,8 @@ export const ReportPopup = ({ group, onClose }: ReportPopupProps): ReactElement 
               <Link
                 key={marker.id}
                 to={`/reports/${marker.id}`}
-                className={`flex gap-3 rounded-xl border border-border border-l-4 bg-card p-2 text-sm text-card-foreground transition hover:bg-muted/50 ${
-                  isLost ? "border-l-red-500" : "border-l-blue-500"
-                }`}
+                className={`flex gap-3 rounded-xl border border-border border-l-4 bg-card p-2 text-sm text-card-foreground transition hover:bg-muted/50 ${isLost ? "border-l-red-500" : "border-l-blue-500"
+                  }`}
               >
                 {photo ? (
                   <img
@@ -91,9 +116,8 @@ export const ReportPopup = ({ group, onClose }: ReportPopupProps): ReactElement 
 
                 <div className="flex flex-col justify-center">
                   <span
-                    className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase text-white ${
-                      isLost ? "bg-red-500" : "bg-blue-500"
-                    }`}
+                    className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase text-white ${isLost ? "bg-red-500" : "bg-blue-500"
+                      }`}
                   >
                     {isLost ? "Lost" : "Sighted"}
                   </span>

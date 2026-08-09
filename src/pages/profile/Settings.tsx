@@ -10,12 +10,14 @@ import {
   AccountSection,
   PasswordSection,
   AppearanceSection,
-  ProfilePrivacySection,
+  // ProfilePrivacySection,
   NotificationsSection,
-  AccessibilitySection,
-  ReportPreferencesSection,
-  DataStorageSection,
   AboutSection,
+  BecomeHelpCenterSection,
+  // AccessibilitySection,
+  // ReportPreferencesSection,
+  // DataStorageSection,
+  // AboutSection,
 } from "@/components/settings";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -63,13 +65,14 @@ export const Settings = (): ReactElement => {
             <PasswordSection onNotice={setNotice} />
           </SettingsBlock>
 
-          <SettingsBlock
+          {/* //TODO integrate ProfilePrivacySEctions in already use */}
+          {/* <SettingsBlock
             id="profile-privacy"
             title="Profile & privacy"
             isFlashed={flashedId === "profile-privacy"}
           >
             <ProfilePrivacySection />
-          </SettingsBlock>
+          </SettingsBlock> */}
         </>
       );
     }
@@ -85,30 +88,24 @@ export const Settings = (): ReactElement => {
             <NotificationsSection />
           </SettingsBlock>
 
-          <SettingsBlock id="accessibility" title="Accessibility" isFlashed={flashedId === "accessibility"}>
-            <AccessibilitySection />
+          <SettingsBlock id="about-huella" title="About Huella" isFlashed={flashedId === "about-huella"}>
+            <AboutSection />
           </SettingsBlock>
+
+          {/* <SettingsBlock id="accessibility" title="Accessibility" isFlashed={flashedId === "accessibility"}>
+            <AccessibilitySection />
+          </SettingsBlock> */}
         </>
       );
     }
 
     return (
       <>
-        <SettingsBlock
-          id="report-preferences"
-          title="Report preferences"
-          isFlashed={flashedId === "report-preferences"}
-        >
-          <ReportPreferencesSection />
+        <SettingsBlock id="become-help-center" title="Become a Help Center" isFlashed={flashedId === "become-help-center"}>
+          <BecomeHelpCenterSection/>
         </SettingsBlock>
 
-        <SettingsBlock id="data-storage" title="Data & storage" isFlashed={flashedId === "data-storage"}>
-          <DataStorageSection />
-        </SettingsBlock>
 
-        <SettingsBlock id="about-huella" title="About Huella" isFlashed={flashedId === "about-huella"}>
-          <AboutSection />
-        </SettingsBlock>
       </>
     );
   };
