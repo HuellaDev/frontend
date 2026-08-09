@@ -3,7 +3,7 @@ import { useState, type FormEvent, type ReactElement } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 
-import { createLostReport, createSightingReport, uploadReportPhoto } from "../../lib/reportsApi";
+import { createLostReport, createSightingReport, uploadReportPhotos } from "../../lib/reportsApi";
 
 import { useGeolocation, type GeoLocation } from "../../hooks/useGeolocation";
 
@@ -11,7 +11,7 @@ import {
   AnimalInformation,
   LocationSection,
   LostInformation,
-  PhotoUploader,
+  MultiPhotoUploader,
   ReportTypeSelector,
   type ReportKind,
 } from "@/components/report-form";
@@ -45,8 +45,7 @@ export const CreateReport = (): ReactElement => {
   const [rewardAmount, setRewardAmount] = useState("");
   const [radiusMeters, setRadiusMeters] = useState("1000");
 
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<File[]>([]);
 
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -76,15 +75,19 @@ export const CreateReport = (): ReactElement => {
 
       const reportId = kind === "lost" ? report.lostReport.id : report.sightingReport.id;
 
-      await uploadReportPhoto(photo!, reportId, kind);
+      const results = await uploadReportPhotos(photos, reportId, kind);
+      const failedPhotoCount = results.filter((r) => r.status === "rejected").length;
 
-      return report;
+      return { report, failedPhotoCount, totalPhotoCount: photos.length };
     },
 
-    onSuccess: () => {
+    onSuccess: ({ failedPhotoCount }) => {
       queryClient.invalidateQueries({ queryKey: ["lost-reports"] });
       queryClient.invalidateQueries({ queryKey: ["sighting-reports"] });
-      navigate("/");
+
+      if (failedPhotoCount === 0) {
+        navigate("/");
+      }
     },
   });
 
@@ -97,8 +100,8 @@ export const CreateReport = (): ReactElement => {
       return;
     }
 
-    if (!photo) {
-      setFormError("A photo is required.");
+    if (photos.length === 0) {
+      setFormError("At least one photo is required.");
       return;
     }
 
@@ -114,6 +117,8 @@ export const CreateReport = (): ReactElement => {
 
     mutation.mutate();
   };
+
+  const succeededWithPhotoFailures = mutation.isSuccess && mutation.data.failedPhotoCount > 0;
 
   return (
     <div className="mx-auto max-w-lg space-y-6 pb-10">
@@ -150,13 +155,7 @@ export const CreateReport = (): ReactElement => {
           />
         )}
 
-        <PhotoUploader
-          photo={photo}
-          setPhoto={setPhoto}
-          photoPreview={photoPreview}
-          setPhotoPreview={setPhotoPreview}
-          required
-        />
+        <MultiPhotoUploader photos={photos} setPhotos={setPhotos} required />
 
         <LocationSection
           mapCenter={mapCenter}
@@ -180,9 +179,24 @@ export const CreateReport = (): ReactElement => {
           </Alert>
         )}
 
-        <Button type="submit" className="w-full" disabled={mutation.isPending}>
-          {mutation.isPending ? "Submitting..." : "Submit report"}
-        </Button>
+        {succeededWithPhotoFailures && (
+          <Alert>
+            <AlertDescription>
+              Report created, but {mutation.data.failedPhotoCount} of{" "}
+              {mutation.data.totalPhotoCount} photo(s) failed to upload.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {succeededWithPhotoFailures ? (
+          <Button type="button" className="w-full" onClick={() => navigate("/")}>
+            Continue
+          </Button>
+        ) : (
+          <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            {mutation.isPending ? "Submitting..." : "Submit report"}
+          </Button>
+        )}
       </form>
     </div>
   );
