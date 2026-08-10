@@ -7,6 +7,7 @@ import {
   Menu,
   Moon,
   Settings as SettingsIcon,
+  ShieldCheck,
   Sun,
   X,
 } from "lucide-react";
@@ -53,6 +54,7 @@ export const AppLayout = (): ReactElement => {
   };
 
   const profile = profileQuery.data;
+  const isAdmin = profile?.role === "admin";
   const linkStyle = "text-muted-foreground transition-colors hover:text-foreground";
   const mobileLinkStyle =
     "flex items-center gap-2 rounded-xl px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-muted";
@@ -172,6 +174,19 @@ export const AppLayout = (): ReactElement => {
                     </span>
                   </button>
 
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => navigate("/admin")}
+                      className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-muted"
+                    >
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                        <ShieldCheck className="size-[18px]" />
+                      </span>
+                      <span className="font-medium">Admin</span>
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => navigate("/settings")}
@@ -256,6 +271,16 @@ export const AppLayout = (): ReactElement => {
                 >
                   New Report
                 </button>
+
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => handleMobileNavigate("/admin")}
+                    className={mobileLinkStyle}
+                  >
+                    Admin
+                  </button>
+                )}
 
                 <button
                   type="button"

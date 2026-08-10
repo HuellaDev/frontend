@@ -77,3 +77,21 @@ export const uploadOrganizationPhotos = async (
 export const deleteOrganizationPhoto = async (photoId: string): Promise<void> => {
   await api.delete(`/photos/${photoId}`);
 };
+
+export const fetchPendingOrganizations = async (): Promise<Organization[]> => {
+  const { data } = await api.get("/organizations/pending");
+  return data;
+};
+
+export interface UpdateOrganizationStatusPayload {
+  verification_status: "approved" | "rejected";
+  verified: boolean;
+}
+
+export const updateOrganizationStatus = async (
+  id: string,
+  payload: UpdateOrganizationStatusPayload,
+): Promise<Organization> => {
+  const { data } = await api.patch<Organization>(`/organizations/${id}`, payload);
+  return data;
+};

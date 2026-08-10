@@ -10,6 +10,9 @@ import { MyReports } from "../pages/reports/MyReports";
 import { Settings } from "../pages/profile/Settings";
 import { HelpCenterDetail } from "../pages/help-center/HelpCenterDetail";
 
+import { AdminRoute } from "./guards/AdminRoute";
+import { AdminDashboard } from "../pages/admin/AdminDashboard";
+
 import { PrivacyPolicy } from "../pages/legal/PrivacyPolicy";
 import { TermsOfService } from "../pages/legal/TermsOfService";
 
@@ -68,6 +71,14 @@ export const appRouter = createBrowserRouter([
       {
         path: "help-centers/:id",
         element: <HelpCenterDetail />,
+      },
+      {
+        path: "admin",
+        element: (
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        ),
       },
 
       {
