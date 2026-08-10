@@ -95,3 +95,19 @@ export const updateOrganizationStatus = async (
   const { data } = await api.patch<Organization>(`/organizations/${id}`, payload);
   return data;
 };
+
+export type OrganizationStatus = "pending" | "approved" | "rejected";
+
+export const fetchOrganizationsByStatus = async (
+  status: OrganizationStatus,
+): Promise<Organization[]> => {
+  if (status === "pending") {
+    return fetchPendingOrganizations();
+  }
+
+  const { data } = await api.get("/organizations", {
+    params: { verification_status: status },
+  });
+
+  return data;
+};

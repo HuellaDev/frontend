@@ -1,23 +1,37 @@
-import { type ReactElement } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState, type ReactElement } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, Check, X } from "lucide-react";
+import { Building2, Search } from "lucide-react";
 import { toast } from "sonner";
 
 import {
-  fetchPendingOrganizations,
+  fetchOrganizationsByStatus,
   updateOrganizationStatus,
-} from "../../lib/organizationsApi";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+  type OrganizationStatus,
+} from "@/lib/organizationsApi";
+import { OrganizationCard } from "@/components/admin";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const TABS: { value: OrganizationStatus; label: string }[] = [
+  { value: "pending", label: "Pending" },
+  { value: "approved", label: "Verified" },
+  { value: "rejected", label: "Rejected" },
+];
+
+const EMPTY_MESSAGES: Record<OrganizationStatus, string> = {
+  pending: "No pending organizations to review.",
+  approved: "No verified organizations yet.",
+  rejected: "No rejected organizations.",
+};
 
 export const AdminDashboard = (): ReactElement => {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<OrganizationStatus>("pending");
+  const [search, setSearch] = useState("");
 
-  const pendingQuery = useQuery({
-    queryKey: ["pending-organizations"],
-    queryFn: fetchPendingOrganizations,
+  const organizationsQuery = useQuery({
+    queryKey: ["organizations", activeTab],
+    queryFn: () => fetchOrganizationsByStatus(activeTab),
   });
 
   const statusMutation = useMutation({
@@ -33,118 +47,106 @@ export const AdminDashboard = (): ReactElement => {
         verified: verification_status === "approved",
       }),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["pending-organizations"] });
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
       toast.success(
         variables.verification_status === "approved"
-          ? "Organización aprobada"
-          : "Organización rechazada",
+          ? "Organization approved"
+          : "Organization rejected",
       );
     },
     onError: () => {
-      toast.error("No se pudo actualizar la organización");
+      toast.error("Could not update the organization");
     },
   });
 
-  const organizations = pendingQuery.data ?? [];
+  const organizations = organizationsQuery.data ?? [];
+
+  const filteredOrganizations = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) return organizations;
+
+    return organizations.filter((org) =>
+      [org.name, org.address, org.Profile?.full_name]
+        .filter(Boolean)
+        .some((field) => field!.toLowerCase().includes(query)),
+    );
+  }, [organizations, search]);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
       <div>
-        <h1 className="text-2xl font-bold">Panel de administración</h1>
+        <h1 className="text-2xl font-bold">Admin panel</h1>
         <p className="text-sm text-muted-foreground">
-          Organizaciones pendientes de verificación
+          Manage shelters and organizations
         </p>
       </div>
 
-      {pendingQuery.isLoading && (
-        <p className="text-sm text-muted-foreground">Cargando...</p>
-      )}
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as OrganizationStatus)}
+      >
+        <TabsList className="grid w-full grid-cols-3">
+          {TABS.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value}>
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-      {pendingQuery.isError && (
-        <p className="text-sm text-red-600">
-          Ocurrió un error al cargar las organizaciones pendientes.
-        </p>
-      )}
-
-      {!pendingQuery.isLoading && organizations.length === 0 && (
-        <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border py-16 text-center">
-          <Building2 className="size-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            No hay organizaciones pendientes por revisar.
-          </p>
+        <div className="relative mt-4">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, address, or requester..."
+            className="pl-9"
+          />
         </div>
-      )}
 
-      <div className="flex flex-col gap-3">
-        {organizations.map((org) => {
-          const isPending = statusMutation.isPending && statusMutation.variables?.id === org.id;
+        {TABS.map((tab) => (
+          <TabsContent key={tab.value} value={tab.value} className="mt-4 flex flex-col gap-3">
+            {organizationsQuery.isLoading && (
+              <p className="text-sm text-muted-foreground">Loading...</p>
+            )}
 
-          return (
-            <div
-              key={org.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => navigate(`/help-centers/${org.id}`)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  navigate(`/help-centers/${org.id}`);
-                }
-              }}
-              className="flex cursor-pointer flex-col gap-3 rounded-xl border border-border p-4 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="truncate font-semibold">{org.name}</p>
-                  <Badge variant="secondary">{org.type}</Badge>
-                </div>
+            {organizationsQuery.isError && (
+              <p className="text-sm text-red-600">
+                Something went wrong while loading organizations.
+              </p>
+            )}
 
-                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                  {org.description ?? "Sin descripción"}
+            {!organizationsQuery.isLoading && filteredOrganizations.length === 0 && (
+              <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border py-16 text-center">
+                <Building2 className="size-8 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  {search ? "No results match your search." : EMPTY_MESSAGES[tab.value]}
                 </p>
-
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {org.address ?? "Sin dirección"} · {org.phone ?? "Sin teléfono"}
-                </p>
-
-                {org.Profile && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Solicitado por {org.Profile.full_name}
-                  </p>
-                )}
               </div>
+            )}
 
-              <div className="flex shrink-0 gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={isPending}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    statusMutation.mutate({ id: org.id, verification_status: "rejected" });
-                  }}
-                >
-                  <X className="size-4" />
-                  Rechazar
-                </Button>
+            {filteredOrganizations.map((org) => {
+              const isMutating =
+                statusMutation.isPending && statusMutation.variables?.id === org.id;
 
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={isPending}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    statusMutation.mutate({ id: org.id, verification_status: "approved" });
-                  }}
-                >
-                  <Check className="size-4" />
-                  Aprobar
-                </Button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+              return (
+                <OrganizationCard
+                  key={org.id}
+                  organization={org}
+                  showActions={tab.value === "pending"}
+                  isMutating={isMutating}
+                  onApprove={() =>
+                    statusMutation.mutate({ id: org.id, verification_status: "approved" })
+                  }
+                  onReject={() =>
+                    statusMutation.mutate({ id: org.id, verification_status: "rejected" })
+                  }
+                />
+              );
+            })}
+          </TabsContent>
+        ))}
+      </Tabs>
     </div>
   );
 };
