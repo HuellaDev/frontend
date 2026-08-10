@@ -1,4 +1,5 @@
 import { type ReactElement } from "react";
+import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Check, X } from "lucide-react";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export const AdminDashboard = (): ReactElement => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const pendingQuery = useQuery({
@@ -80,7 +82,15 @@ export const AdminDashboard = (): ReactElement => {
           return (
             <div
               key={org.id}
-              className="flex flex-col gap-3 rounded-xl border border-border p-4 sm:flex-row sm:items-center sm:justify-between"
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate(`/help-centers/${org.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  navigate(`/help-centers/${org.id}`);
+                }
+              }}
+              className="flex cursor-pointer flex-col gap-3 rounded-xl border border-border p-4 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
@@ -109,9 +119,10 @@ export const AdminDashboard = (): ReactElement => {
                   variant="outline"
                   size="sm"
                   disabled={isPending}
-                  onClick={() =>
-                    statusMutation.mutate({ id: org.id, verification_status: "rejected" })
-                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    statusMutation.mutate({ id: org.id, verification_status: "rejected" });
+                  }}
                 >
                   <X className="size-4" />
                   Rechazar
@@ -121,9 +132,10 @@ export const AdminDashboard = (): ReactElement => {
                   type="button"
                   size="sm"
                   disabled={isPending}
-                  onClick={() =>
-                    statusMutation.mutate({ id: org.id, verification_status: "approved" })
-                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    statusMutation.mutate({ id: org.id, verification_status: "approved" });
+                  }}
                 >
                   <Check className="size-4" />
                   Aprobar
