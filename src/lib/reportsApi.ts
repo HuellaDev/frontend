@@ -57,15 +57,38 @@ export const createSightingReport = async (payload: CreateReportPayload) => {
 export const uploadReportPhoto = async (
   file: File,
   reportId: string,
-  kind: "lost" | "sighting"
+  kind: "lost" | "sighting",
+  isPrimary = false,
 ) => {
   const formData = new FormData();
   formData.append("file", file);
   formData.append(kind === "lost" ? "lost_report_id" : "sighting_report_id", reportId);
-  formData.append("is_primary", "true");
+  formData.append("is_primary", String(isPrimary));
 
   const { data } = await api.post("/photos", formData);
   return data;
+};
+
+export interface PhotoUploadResult {
+  file: File;
+  status: "fulfilled" | "rejected";
+  error?: unknown;
+}
+
+export const uploadReportPhotos = async (
+  photos: File[],
+  reportId: string,
+  kind: "lost" | "sighting",
+): Promise<PhotoUploadResult[]> => {
+  const settled = await Promise.allSettled(
+    photos.map((file, index) => uploadReportPhoto(file, reportId, kind, index === 0)),
+  );
+
+  return settled.map((result, index) => ({
+    file: photos[index],
+    status: result.status,
+    error: result.status === "rejected" ? result.reason : undefined,
+  }));
 };
 
 export const fetchLostReportById = async (id: string): Promise<LostReport> => {
@@ -95,7 +118,7 @@ export const fetchReportById = async (id: string): Promise<ReportWithKind> => {
 export const updateReportStatus = async (
   kind: "lost" | "sighting",
   id: string,
-  status: string
+  status: string,
 ) => {
   const path = kind === "lost" ? `/lost-reports/${id}/status` : `/sighting-reports/${id}/status`;
   const { data } = await api.patch(path, { status });

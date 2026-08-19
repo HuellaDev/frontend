@@ -1,3 +1,4 @@
+
 export { SettingsBlock } from "./SettingsBlock";
 export { PendingRow } from "./PendingRow";
 export { SettingsSidebar, settingsNavigation, type SettingsGroup } from "./SettingsSidebar";
@@ -6,10 +7,12 @@ export { AccountSection } from "./AccountSection";
 export { PasswordSection } from "./PasswordSection";
 export { AppearanceSection } from "./AppearanceSection";
 export { NotificationsSection } from "./NotificationsSection";
-export {
-  ProfilePrivacySection,
-  AccessibilitySection,
-  ReportPreferencesSection,
-  DataStorageSection,
-  AboutSection,
-} from "./ComingSoonSections";
+export { AboutSection } from './AboutSection';
+export { BecomeHelpCenterSection } from "./BecomeHelpCenterSection";
+// export {
+//   ProfilePrivacySection,
+//   AccessibilitySection,
+//   ReportPreferencesSection,
+//   DataStorageSection,
+//   AboutSection,
+// } from "./ComingSoonSections";

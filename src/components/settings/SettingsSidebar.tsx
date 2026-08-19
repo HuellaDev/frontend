@@ -5,7 +5,7 @@ import { CircleUserRound, Database, type LucideIcon, SlidersHorizontal } from "l
 import { fetchMyProfile } from "../../lib/profileApi";
 import { cn } from "@/lib/utils";
 
-export type SettingsGroup = "account" | "app" | "reports";
+export type SettingsGroup = "account" | "app" | "organization";
 
 export const settingsNavigation: Array<{
   id: SettingsGroup;
@@ -13,38 +13,40 @@ export const settingsNavigation: Array<{
   icon: LucideIcon;
   items: Array<{ id: string; label: string }>;
 }> = [
-  {
-    id: "account",
-    label: "Account",
-    icon: CircleUserRound,
-    items: [
-      { id: "profile-info", label: "Profile" },
-      { id: "account-information", label: "Account information" },
-      { id: "password-security", label: "Password & security" },
-      { id: "profile-privacy", label: "Profile & privacy" },
-    ],
-  },
-  {
-    id: "app",
-    label: "App settings",
-    icon: SlidersHorizontal,
-    items: [
-      { id: "appearance", label: "Appearance" },
-      { id: "notifications", label: "Notifications" },
-      { id: "accessibility", label: "Accessibility" },
-    ],
-  },
-  {
-    id: "reports",
-    label: "Reports & data",
-    icon: Database,
-    items: [
-      { id: "report-preferences", label: "Report preferences" },
-      { id: "data-storage", label: "Data & storage" },
-      { id: "about-huella", label: "About Huella" },
-    ],
-  },
-];
+    {
+      id: "account",
+      label: "Account",
+      icon: CircleUserRound,
+      items: [
+        { id: "profile-info", label: "Profile" },
+        { id: "account-information", label: "Account information" },
+        { id: "password-security", label: "Password & security" },
+        // { id: "profile-privacy", label: "Profile & privacy" },
+      ],
+    },
+    {
+      id: "app",
+      label: "App settings",
+      icon: SlidersHorizontal,
+      items: [
+        { id: "appearance", label: "Appearance" },
+        { id: "notifications", label: "Notifications" },
+        { id: "about-huella", label: "About Huella" },
+        // { id: "accessibility", label: "Accessibility" },
+      ],
+    },
+    {
+      id: "organization",
+      label: "Organization",
+      icon: Database,
+      items: [
+        { id: "become-help-center", label: "Become a Help Center" },
+
+
+      ],
+    },
+
+  ];
 
 interface SettingsSidebarProps {
   activeGroup: SettingsGroup;
@@ -77,7 +79,11 @@ export const SettingsSidebar = ({ activeGroup, onSelectGroup }: SettingsSidebarP
         USER SETTINGS
       </p>
 
+
+
+
       <nav className="space-y-2">
+
         {settingsNavigation.map(({ id, label, icon: Icon, items }) => (
           <div key={id}>
             <button

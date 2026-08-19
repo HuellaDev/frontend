@@ -4,6 +4,7 @@ export interface AppNotification {
   type: string;
   title: string;
   message: string;
+  link_url: string | null;
   is_read: boolean;
   created_at: string;
 }

@@ -7,195 +7,160 @@ import MapGL, {
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
-
 import { useGeolocation } from "../../hooks/useGeolocation";
 import { useInitialLocation } from "../../hooks/useInitialLocation";
-import { useMapReports } from "../../hooks/useMapReports";
-
+import { useMapMarkers } from "../../hooks/useMapMarkers";
 
 import {
   MapControls,
   UserMarker,
-  ReportMarker,
-  ReportPopup,
+  MapMarker,
+  MapPopup,
 } from "@/components/map-page";
+
 import { SearchRadiusLayer } from "@/components/map-page/SearchRadiusLayer";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-
 import type { MapStyleKey } from "@/components/map-page";
 import type { MarkerGroup } from "../../types/report";
-
 
 const DEFAULT_CENTER = {
   longitude: -89.6237,
   latitude: 20.9674,
 };
 
-
 const MIN_ZOOM_FOR_MARKERS = 8;
 
-
-
-const MAP_STYLES: Record<MapStyleKey, {label:string;url:string}> = {
-  liberty:{
-    label:"Light",
-    url:"https://tiles.openfreemap.org/styles/liberty",
+const MAP_STYLES: Record<
+  MapStyleKey,
+  { label: string; url: string }
+> = {
+  liberty: {
+    label: "Light",
+    url: "https://tiles.openfreemap.org/styles/liberty",
   },
 
-  dark:{
-    label:"Dark",
-    url:"https://tiles.openfreemap.org/styles/dark",
+  dark: {
+    label: "Dark",
+    url: "https://tiles.openfreemap.org/styles/dark",
   },
 
-  fiord:{
-    label:"Fiord",
-    url:"https://tiles.openfreemap.org/styles/fiord",
+  fiord: {
+    label: "Fiord",
+    url: "https://tiles.openfreemap.org/styles/fiord",
   },
 };
 
-
+const getToday = (): string => new Date().toISOString().slice(0, 10);
 
 const shiftDate = (dateStr: string, days: number): string => {
-  const base = dateStr ? new Date(`${dateStr}T00:00:00`) : new Date();
+  const base = dateStr
+    ? new Date(`${dateStr}T00:00:00`)
+    : new Date();
+
   base.setDate(base.getDate() + days);
+
   return base.toISOString().slice(0, 10);
 };
 
 export const MapPage = (): ReactElement => {
+  const mapRef = useRef<MapRef | null>(null);
 
-
-  const mapRef = useRef<MapRef>(null);
-
-
-  const [selectedGroup,setSelectedGroup] =
+  const [selectedGroup, setSelectedGroup] =
     useState<MarkerGroup | null>(null);
 
+  const [is3D, setIs3D] = useState(false);
 
-  const [is3D,setIs3D] = useState(false);
-
-  const [styleKey,setStyleKey] =
+  const [styleKey, setStyleKey] =
     useState<MapStyleKey>("liberty");
 
+  const [zoom, setZoom] = useState(12);
 
-  const [zoom,setZoom] = useState(12);
-  const [asOfDate, setAsOfDate] = useState<string>("");
-
-
+  const [asOfDate, setAsOfDate] = useState("");
 
   const {
-    location:userLocation,
+    location: userLocation,
     isLocating,
-    error:locationError,
+    error: locationError,
     locate,
   } = useGeolocation();
 
-
-
   const {
-    location:initialLocation,
-    source:initialSource,
+    location: initialLocation,
+    source: initialSource,
   } = useInitialLocation();
-
-
 
   const {
     markerGroups,
     markers,
     isLoading,
-  } = useMapReports(asOfDate ? new Date(`${asOfDate}T23:59:59.999`).toISOString() : undefined );
+  } = useMapMarkers(
+    asOfDate
+      ? new Date(asOfDate).toISOString()
+      : undefined,
+  );
 
-
-
-
-  useEffect(()=>{
-
-    if(!initialLocation) return;
+  useEffect(() => {
+    if (!initialLocation) return;
 
     mapRef.current?.flyTo({
-      center:[
+      center: [
         initialLocation.longitude,
         initialLocation.latitude,
       ],
-      zoom:initialSource==="gps" ? 13 : 10,
-      duration:0,
+      zoom: initialSource === "gps" ? 13 : 10,
+      duration: 0,
     });
+  }, [initialLocation, initialSource]);
 
-  },[initialLocation,initialSource]);
-
-
-
-
-
-  useEffect(()=>{
-
-    if(!userLocation) return;
-
+  useEffect(() => {
+    if (!userLocation) return;
 
     mapRef.current?.flyTo({
-      center:[
+      center: [
         userLocation.longitude,
         userLocation.latitude,
       ],
-      zoom:14,
-      duration:1500,
+      zoom: 14,
+      duration: 1500,
     });
-
-
-  },[userLocation]);
-
-
-
-
+  }, [userLocation]);
 
   const handleMove = (
-    e:ViewStateChangeEvent,
-  )=>{
+    e: ViewStateChangeEvent,
+  ) => {
     setZoom(e.viewState.zoom);
   };
 
-
-
-  const showMarkers =  zoom >= MIN_ZOOM_FOR_MARKERS;
-
-
-
+  const showMarkers =
+    zoom >= MIN_ZOOM_FOR_MARKERS;
 
   return (
-
     <div className="-my-8 flex h-[calc(100vh-73px)] w-full flex-col overflow-hidden">
-
-
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-
         <div>
-
           <h1 className="text-2xl font-semibold">
             Map
           </h1>
 
-
           <p className="text-sm text-muted-foreground">
-
-            {
-              isLoading
+            {isLoading
               ? "Loading reports..."
               : showMarkers
-              ? `${markers.length} active reports nearby`
-              : "Zoom in to see reports"
-            }
-
+                ? `${markers.length} active reports nearby`
+                : "Zoom in to see reports"}
           </p>
-
         </div>
-
-
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1">
             <button
               type="button"
-              onClick={() => setAsOfDate((prev) => shiftDate(prev, -1))}
+              onClick={() =>
+                setAsOfDate((prev) =>
+                  shiftDate(prev, -1),
+                )
+              }
               className="flex h-7 w-7 items-center justify-center rounded-full border border-border hover:bg-muted"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
@@ -203,9 +168,12 @@ export const MapPage = (): ReactElement => {
 
             <input
               type="date"
-              value={asOfDate}
-              max={new Date().toISOString().slice(0, 10)}
-              onChange={(e) => setAsOfDate(e.target.value)}
+              value={asOfDate || getToday()}
+              max={getToday()}
+              onChange={(e) => {
+                const value = e.target.value;
+                setAsOfDate(value === getToday() ? "" : value);
+              }}
               className="h-7 rounded-full border border-border px-3 text-xs"
             />
 
@@ -214,8 +182,7 @@ export const MapPage = (): ReactElement => {
               onClick={() =>
                 setAsOfDate((prev) => {
                   const next = shiftDate(prev, 1);
-                  const today = new Date().toISOString().slice(0, 10);
-                  return next >= today ? "" : next;
+                  return next >= getToday() ? "" : next;
                 })
               }
               className="flex h-7 w-7 items-center justify-center rounded-full border border-border hover:bg-muted"
@@ -244,93 +211,58 @@ export const MapPage = (): ReactElement => {
             locate={locate}
           />
         </div>
-
-
       </div>
 
-
-
-
-      {locationError &&
+      {locationError && (
         <p className="mb-3 text-sm text-red-600">
           {locationError}
         </p>
-      }
-
-
-
-
+      )}
 
       <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-border">
-
-
         <MapGL
           ref={mapRef}
           initialViewState={{
-            longitude:DEFAULT_CENTER.longitude,
-            latitude:DEFAULT_CENTER.latitude,
-            zoom:12,
+            longitude: DEFAULT_CENTER.longitude,
+            latitude: DEFAULT_CENTER.latitude,
+            zoom: 12,
           }}
           onMove={handleMove}
           pitch={is3D ? 60 : 0}
           bearing={is3D ? -20 : 0}
           mapStyle={MAP_STYLES[styleKey].url}
           style={{
-            width:"100%",
-            height:"100%",
+            width: "100%",
+            height: "100%",
           }}
         >
-
-
-          {
-            showMarkers &&
+          {showMarkers && (
             <SearchRadiusLayer markers={markers} />
-          }
+          )}
 
+          {userLocation && (
+            <UserMarker location={userLocation} />
+          )}
 
-
-
-          {
-            userLocation &&
-            <UserMarker location={userLocation}/>
-          }
-
-
-
-
-          {
-            showMarkers &&
-            markerGroups.map(group=>(
-
-              <ReportMarker
+          {showMarkers &&
+            markerGroups.map((group) => (
+              <MapMarker
                 key={group.key}
                 group={group}
                 onSelect={setSelectedGroup}
               />
+            ))}
 
-            ))
-          }
-
-
-
-
-          {
-            selectedGroup &&
-            <ReportPopup
+          {selectedGroup && (
+            <MapPopup
               group={selectedGroup}
-              onClose={()=>setSelectedGroup(null)}
+              onClose={() =>
+                setSelectedGroup(null)
+              }
             />
-          }
-
-
-
+          )}
         </MapGL>
-
-
       </div>
-
-
     </div>
-
   );
 };
