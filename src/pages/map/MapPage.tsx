@@ -51,6 +51,8 @@ const MAP_STYLES: Record<
   },
 };
 
+const getToday = (): string => new Date().toISOString().slice(0, 10);
+
 const shiftDate = (dateStr: string, days: number): string => {
   const base = dateStr
     ? new Date(`${dateStr}T00:00:00`)
@@ -166,13 +168,12 @@ export const MapPage = (): ReactElement => {
 
             <input
               type="date"
-              value={asOfDate}
-              max={new Date()
-                .toISOString()
-                .slice(0, 10)}
-              onChange={(e) =>
-                setAsOfDate(e.target.value)
-              }
+              value={asOfDate || getToday()}
+              max={getToday()}
+              onChange={(e) => {
+                const value = e.target.value;
+                setAsOfDate(value === getToday() ? "" : value);
+              }}
               className="h-7 rounded-full border border-border px-3 text-xs"
             />
 
@@ -181,11 +182,7 @@ export const MapPage = (): ReactElement => {
               onClick={() =>
                 setAsOfDate((prev) => {
                   const next = shiftDate(prev, 1);
-                  const today = new Date()
-                    .toISOString()
-                    .slice(0, 10);
-
-                  return next >= today ? "" : next;
+                  return next >= getToday() ? "" : next;
                 })
               }
               className="flex h-7 w-7 items-center justify-center rounded-full border border-border hover:bg-muted"
