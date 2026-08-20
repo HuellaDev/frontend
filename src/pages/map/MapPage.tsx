@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type ReactElement } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactElement,
+} from "react";
 
 import MapGL, {
   type MapRef,
@@ -30,6 +36,37 @@ const DEFAULT_CENTER = {
 };
 
 const MIN_ZOOM_FOR_MARKERS = 8;
+
+const ZOOM_THRESHOLD_FOR_SMALL_RADIUS = 12;
+
+const NEARBY_RADIUS_FAR_KM = 10;
+
+const NEARBY_RADIUS_NEAR_KM = 5;
+
+const EARTH_RADIUS_KM = 6371;
+
+const toRadians = (degrees: number): number =>
+  (degrees * Math.PI) / 180;
+
+const getDistanceKm = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number => {
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLon / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return EARTH_RADIUS_KM * c;
+};
 
 const MAP_STYLES: Record<
   MapStyleKey,
@@ -75,6 +112,10 @@ export const MapPage = (): ReactElement => {
     useState<MapStyleKey>("liberty");
 
   const [zoom, setZoom] = useState(12);
+
+  const [mapCenter, setMapCenter] = useState(
+    DEFAULT_CENTER,
+  );
 
   const [asOfDate, setAsOfDate] = useState("");
 
@@ -130,7 +171,41 @@ export const MapPage = (): ReactElement => {
     e: ViewStateChangeEvent,
   ) => {
     setZoom(e.viewState.zoom);
+
+    setMapCenter({
+      longitude: e.viewState.longitude,
+      latitude: e.viewState.latitude,
+    });
   };
+
+  const nearbyRadiusKm =
+    zoom >= ZOOM_THRESHOLD_FOR_SMALL_RADIUS
+      ? NEARBY_RADIUS_NEAR_KM
+      : NEARBY_RADIUS_FAR_KM;
+
+  const nearbyMarkers = useMemo(() => {
+    return markers.filter(
+      (marker) =>
+        getDistanceKm(
+          mapCenter.latitude,
+          mapCenter.longitude,
+          marker.latitude,
+          marker.longitude,
+        ) <= nearbyRadiusKm,
+    );
+  }, [markers, mapCenter, nearbyRadiusKm]);
+
+  const nearbyMarkerGroups = useMemo(() => {
+    return markerGroups.filter(
+      (group) =>
+        getDistanceKm(
+          mapCenter.latitude,
+          mapCenter.longitude,
+          group.latitude,
+          group.longitude,
+        ) <= nearbyRadiusKm,
+    );
+  }, [markerGroups, mapCenter, nearbyRadiusKm]);
 
   const showMarkers =
     zoom >= MIN_ZOOM_FOR_MARKERS;
@@ -147,7 +222,7 @@ export const MapPage = (): ReactElement => {
             {isLoading
               ? "Loading reports..."
               : showMarkers
-                ? `${markers.length} active reports nearby`
+                ? `${nearbyMarkers.length} active reports nearby`
                 : "Zoom in to see reports"}
           </p>
         </div>
@@ -237,7 +312,7 @@ export const MapPage = (): ReactElement => {
           }}
         >
           {showMarkers && (
-            <SearchRadiusLayer markers={markers} />
+            <SearchRadiusLayer markers={nearbyMarkers} />
           )}
 
           {userLocation && (
@@ -245,7 +320,7 @@ export const MapPage = (): ReactElement => {
           )}
 
           {showMarkers &&
-            markerGroups.map((group) => (
+            nearbyMarkerGroups.map((group) => (
               <MapMarker
                 key={group.key}
                 group={group}
