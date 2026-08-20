@@ -1,21 +1,14 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactElement,
-} from "react";
+import { useEffect, useRef, useState, type ReactElement } from "react";
 
-import MapGL, {
-  type MapRef,
-  type ViewStateChangeEvent,
-} from "react-map-gl/maplibre";
+import MapGL, { type MapRef } from "react-map-gl/maplibre";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { useGeolocation } from "../../hooks/useGeolocation";
 import { useInitialLocation } from "../../hooks/useInitialLocation";
 import { useMapMarkers } from "../../hooks/useMapMarkers";
+import { useMapNearbyReports } from "../../hooks/useMapNearbyReports";
+import { useDateFilter } from "../../hooks/useDateFilter";
 
 import {
   MapControls,
@@ -25,80 +18,11 @@ import {
 } from "@/components/map-page";
 
 import { SearchRadiusLayer } from "@/components/map-page/SearchRadiusLayer";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DateNavigator } from "@/components/map-page/DateNavigator";
+import { DEFAULT_CENTER, MAP_STYLES } from "@/lib/mapStyles";
 
 import type { MapStyleKey } from "@/components/map-page";
 import type { MarkerGroup } from "../../types/report";
-
-const DEFAULT_CENTER = {
-  longitude: -89.6237,
-  latitude: 20.9674,
-};
-
-const MIN_ZOOM_FOR_MARKERS = 8;
-
-const ZOOM_THRESHOLD_FOR_SMALL_RADIUS = 12;
-
-const NEARBY_RADIUS_FAR_KM = 10;
-
-const NEARBY_RADIUS_NEAR_KM = 5;
-
-const EARTH_RADIUS_KM = 6371;
-
-const toRadians = (degrees: number): number =>
-  (degrees * Math.PI) / 180;
-
-const getDistanceKm = (
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number,
-): number => {
-  const dLat = toRadians(lat2 - lat1);
-  const dLon = toRadians(lon2 - lon1);
-
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRadians(lat1)) *
-      Math.cos(toRadians(lat2)) *
-      Math.sin(dLon / 2) ** 2;
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return EARTH_RADIUS_KM * c;
-};
-
-const MAP_STYLES: Record<
-  MapStyleKey,
-  { label: string; url: string }
-> = {
-  liberty: {
-    label: "Light",
-    url: "https://tiles.openfreemap.org/styles/liberty",
-  },
-
-  dark: {
-    label: "Dark",
-    url: "https://tiles.openfreemap.org/styles/dark",
-  },
-
-  fiord: {
-    label: "Fiord",
-    url: "https://tiles.openfreemap.org/styles/fiord",
-  },
-};
-
-const getToday = (): string => new Date().toISOString().slice(0, 10);
-
-const shiftDate = (dateStr: string, days: number): string => {
-  const base = dateStr
-    ? new Date(`${dateStr}T00:00:00`)
-    : new Date();
-
-  base.setDate(base.getDate() + days);
-
-  return base.toISOString().slice(0, 10);
-};
 
 export const MapPage = (): ReactElement => {
   const mapRef = useRef<MapRef | null>(null);
@@ -111,13 +35,7 @@ export const MapPage = (): ReactElement => {
   const [styleKey, setStyleKey] =
     useState<MapStyleKey>("liberty");
 
-  const [zoom, setZoom] = useState(12);
-
-  const [mapCenter, setMapCenter] = useState(
-    DEFAULT_CENTER,
-  );
-
-  const [asOfDate, setAsOfDate] = useState("");
+  const dateFilter = useDateFilter();
 
   const {
     location: userLocation,
@@ -136,10 +54,21 @@ export const MapPage = (): ReactElement => {
     markers,
     isLoading,
   } = useMapMarkers(
-    asOfDate
-      ? new Date(asOfDate).toISOString()
+    dateFilter.asOfDate
+      ? new Date(dateFilter.asOfDate).toISOString()
       : undefined,
   );
+
+  const {
+    handleMove,
+    showMarkers,
+    nearbyMarkers,
+    nearbyMarkerGroups,
+  } = useMapNearbyReports({
+    markers,
+    markerGroups,
+    defaultCenter: DEFAULT_CENTER,
+  });
 
   useEffect(() => {
     if (!initialLocation) return;
@@ -167,49 +96,6 @@ export const MapPage = (): ReactElement => {
     });
   }, [userLocation]);
 
-  const handleMove = (
-    e: ViewStateChangeEvent,
-  ) => {
-    setZoom(e.viewState.zoom);
-
-    setMapCenter({
-      longitude: e.viewState.longitude,
-      latitude: e.viewState.latitude,
-    });
-  };
-
-  const nearbyRadiusKm =
-    zoom >= ZOOM_THRESHOLD_FOR_SMALL_RADIUS
-      ? NEARBY_RADIUS_NEAR_KM
-      : NEARBY_RADIUS_FAR_KM;
-
-  const nearbyMarkers = useMemo(() => {
-    return markers.filter(
-      (marker) =>
-        getDistanceKm(
-          mapCenter.latitude,
-          mapCenter.longitude,
-          marker.latitude,
-          marker.longitude,
-        ) <= nearbyRadiusKm,
-    );
-  }, [markers, mapCenter, nearbyRadiusKm]);
-
-  const nearbyMarkerGroups = useMemo(() => {
-    return markerGroups.filter(
-      (group) =>
-        getDistanceKm(
-          mapCenter.latitude,
-          mapCenter.longitude,
-          group.latitude,
-          group.longitude,
-        ) <= nearbyRadiusKm,
-    );
-  }, [markerGroups, mapCenter, nearbyRadiusKm]);
-
-  const showMarkers =
-    zoom >= MIN_ZOOM_FOR_MARKERS;
-
   return (
     <div className="-my-8 flex h-[calc(100vh-73px)] w-full flex-col overflow-hidden">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -228,53 +114,15 @@ export const MapPage = (): ReactElement => {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() =>
-                setAsOfDate((prev) =>
-                  shiftDate(prev, -1),
-                )
-              }
-              className="flex h-7 w-7 items-center justify-center rounded-full border border-border hover:bg-muted"
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-            </button>
-
-            <input
-              type="date"
-              value={asOfDate || getToday()}
-              max={getToday()}
-              onChange={(e) => {
-                const value = e.target.value;
-                setAsOfDate(value === getToday() ? "" : value);
-              }}
-              className="h-7 rounded-full border border-border px-3 text-xs"
-            />
-
-            <button
-              type="button"
-              onClick={() =>
-                setAsOfDate((prev) => {
-                  const next = shiftDate(prev, 1);
-                  return next >= getToday() ? "" : next;
-                })
-              }
-              className="flex h-7 w-7 items-center justify-center rounded-full border border-border hover:bg-muted"
-            >
-              <ChevronRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
-
-          {asOfDate && (
-            <button
-              type="button"
-              onClick={() => setAsOfDate("")}
-              className="text-xs text-muted-foreground underline"
-            >
-              Live
-            </button>
-          )}
+          <DateNavigator
+            value={dateFilter.inputValue}
+            maxDate={dateFilter.maxDate}
+            isLive={dateFilter.isLive}
+            onPrev={dateFilter.goToPreviousDay}
+            onNext={dateFilter.goToNextDay}
+            onChange={dateFilter.handleDateInputChange}
+            onReset={dateFilter.resetToLive}
+          />
 
           <MapControls
             styleKey={styleKey}
