@@ -62,7 +62,7 @@ export const PrivacyPolicy = (): ReactElement => {
       </Section>
 
       <Section title="Contact">
-        <p>Questions about your data? Reach out at soporte@huella.dev.</p>
+        <p>Questions about your data? Reach out at huella.project@gmail.com.</p>
       </Section>
     </div>
   );

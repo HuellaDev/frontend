@@ -56,7 +56,7 @@ export const TermsOfService = (): ReactElement => {
       </Section>
 
       <Section title="Contact">
-        <p>Questions? Reach out at soporte@huella.dev.</p>
+        <p>Questions? Reach out at huella.project@gmail.com</p>
       </Section>
     </div>
   );

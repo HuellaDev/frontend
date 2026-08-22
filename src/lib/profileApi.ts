@@ -32,6 +32,11 @@ export const updateMyProfile = async (payload: {
 };
 
 
+export const deleteMyAccount = async (): Promise<void> => {
+  await api.delete("/profile/me");
+};
+
+
 export const uploadMyProfilePhoto = async (file: File): Promise<MyProfile> => {
   const formData = new FormData();
 

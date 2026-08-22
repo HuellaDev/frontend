@@ -22,6 +22,7 @@ export const settingsNavigation: Array<{
         { id: "account-information", label: "Account information" },
         { id: "password-security", label: "Password & security" },
         // { id: "profile-privacy", label: "Profile & privacy" },
+        { id: "delete-account", label: "Delete account" },
       ],
     },
     {

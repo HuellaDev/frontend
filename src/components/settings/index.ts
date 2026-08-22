@@ -5,14 +5,8 @@ export { SettingsSidebar, settingsNavigation, type SettingsGroup } from "./Setti
 export { ProfileSection } from "./ProfileSection";
 export { AccountSection } from "./AccountSection";
 export { PasswordSection } from "./PasswordSection";
+export { DeleteAccountSection } from "./DeleteAccountSection";
 export { AppearanceSection } from "./AppearanceSection";
 export { NotificationsSection } from "./NotificationsSection";
 export { AboutSection } from './AboutSection';
 export { BecomeHelpCenterSection } from "./BecomeHelpCenterSection";
-// export {
-//   ProfilePrivacySection,
-//   AccessibilitySection,
-//   ReportPreferencesSection,
-//   DataStorageSection,
-//   AboutSection,
-// } from "./ComingSoonSections";

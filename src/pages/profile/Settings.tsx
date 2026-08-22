@@ -9,6 +9,7 @@ import {
   ProfileSection,
   AccountSection,
   PasswordSection,
+  DeleteAccountSection,
   AppearanceSection,
   // ProfilePrivacySection,
   NotificationsSection,
@@ -73,6 +74,14 @@ export const Settings = (): ReactElement => {
           >
             <ProfilePrivacySection />
           </SettingsBlock> */}
+
+          <SettingsBlock
+            id="delete-account"
+            title="Delete account"
+            isFlashed={flashedId === "delete-account"}
+          >
+            <DeleteAccountSection onNotice={setNotice} />
+          </SettingsBlock>
         </>
       );
     }
