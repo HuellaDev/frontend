@@ -96,4 +96,4 @@ Protected routes are wrapped with `ProtectedRoute` / `AdminRoute` guards (`src/r
 
 ## License
 
-ISC. See [LICENSE](./LICENSE).
+MIT. See [LICENSE](./LICENSE).
