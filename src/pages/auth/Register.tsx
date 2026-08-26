@@ -56,6 +56,17 @@ export const Register = (): ReactElement => {
             return;
         }
 
+        // Si el correo ya existe y ya está confirmado, Supabase regresa un
+        // usuario "fantasma" con identities vacío en vez de un error
+        // (protección contra enumeración de correos). Lo detectamos así.
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+            setIsLoading(false);
+            setError(
+                "That email is already registered. Try logging in instead."
+            );
+            return;
+        }
+
 
         if (!data.session) {
             setIsLoading(false);
